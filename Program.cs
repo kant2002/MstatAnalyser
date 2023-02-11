@@ -49,14 +49,12 @@ internal class Program
     private static void ReadFile(FileInfo file, string? assemblyFilter)
     {
         var asm = AssemblyDefinition.ReadAssembly(file.FullName);
-        var globalType = (TypeDefinition)asm.MainModule.LookupToken(0x02000001);
-        var types = globalType.GetTypesInformationContainer();
-        var typeStats = GetTypes(types).ToList();
+        var assemblyStats = new AssemblyStats(asm);
+        var typeStats = assemblyStats.TypeStats;
         PrintTypesStatistics(typeStats, assemblyFilter);
 
         Console.WriteLine();
-        var methods = globalType.GetMethodsInformationContainer();
-        var methodStats = GetMethods(methods).ToList();
+        var methodStats = assemblyStats.MethodStats;
         PrintMethodsStatistics(methodStats, assemblyFilter);
 
         Console.WriteLine();
@@ -78,13 +76,12 @@ internal class Program
 
         if (string.IsNullOrWhiteSpace(assemblyFilter))
         {
-            var blobs = globalType.GetBlobsInformationContainer();
-            var blobStats = GetBlobs(blobs).ToList();
+            var blobStats = assemblyStats.BlobStats;
             PrintBlobStatistics(blobStats);
         }
     }
 
-    private static void PrintBlobStatistics(List<BlobStats> blobStats)
+    private static void PrintBlobStatistics(IList<BlobStats> blobStats)
     {
         var blobSize = blobStats.Sum(x => x.Size);
         Console.WriteLine($"// ********** Blobs Total Size {blobSize:n0}");
@@ -95,7 +92,7 @@ internal class Program
         Console.WriteLine($"// **********");
     }
 
-    private static void PrintMethodsStatistics(List<MethodStats> methodStats, string? assemblyFilter)
+    private static void PrintMethodsStatistics(IList<MethodStats> methodStats, string? assemblyFilter)
     {
         methodStats = methodStats.Where(methodStats => IsTypeFiltered(methodStats.Method.DeclaringType, assemblyFilter)).ToList();
         var methodSize = methodStats.Sum(x => x.TotalSize);
@@ -132,7 +129,7 @@ internal class Program
         return false;
     }
 
-    private static void PrintTypesStatistics(List<TypeStats> typeStats, string? assemblyFilter)
+    private static void PrintTypesStatistics(IList<TypeStats> typeStats, string? assemblyFilter)
     {
         typeStats = typeStats.Where(type => IsTypeFiltered(type.Type, assemblyFilter)).ToList();
         var typeSize = typeStats.Sum(x => x.Size);
@@ -151,57 +148,5 @@ internal class Program
             Console.WriteLine($"{m.Name,-40} {m.Sum,7:n0}");
         }
         Console.WriteLine($"// **********");
-    }
-
-    public static IEnumerable<TypeStats> GetTypes(MethodDefinition types)
-    {
-        types.Body.SimplifyMacros();
-        var il = types.Body.Instructions;
-        for (int i = 0; i + 2 < il.Count; i += 2)
-        {
-            var type = (TypeReference)il[i + 0].Operand;
-            var size = (int)il[i + 1].Operand;
-            yield return new TypeStats
-            {
-                Type = type,
-                Size = size
-            };
-        }
-    }
-
-    public static IEnumerable<MethodStats> GetMethods(MethodDefinition methods)
-    {
-        methods.Body.SimplifyMacros();
-        var il = methods.Body.Instructions;
-        for (int i = 0; i + 4 < il.Count; i += 4)
-        {
-            var method = (MethodReference)il[i + 0].Operand;
-            var size = (int)il[i + 1].Operand;
-            var gcInfoSize = (int)il[i + 2].Operand;
-            var ehInfoSize = (int)il[i + 3].Operand;
-            yield return new MethodStats
-            {
-                Method = method,
-                Size = size,
-                GcInfoSize = gcInfoSize,
-                EhInfoSize = ehInfoSize
-            };
-        }
-    }
-
-    public static IEnumerable<BlobStats> GetBlobs(MethodDefinition blobs)
-    {
-        blobs.Body.SimplifyMacros();
-        var il = blobs.Body.Instructions;
-        for (int i = 0; i + 2 < il.Count; i += 2)
-        {
-            var name = (string)il[i + 0].Operand;
-            var size = (int)il[i + 1].Operand;
-            yield return new BlobStats
-            {
-                Name = name,
-                Size = size
-            };
-        }
     }
 }
