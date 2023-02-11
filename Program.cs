@@ -5,7 +5,6 @@ namespace NativeAOTSizeAnalyzer;
 
 internal class Program
 {
-
     static string FindNamespace(TypeReference type)
     {
         var current = type;
@@ -27,33 +26,44 @@ internal class Program
 
     static void Main(string[] args)
     {
+        string? assemblyFilter = null;
+        //string? assemblyFilter = "Microsoft.EntityFrameworkCore";
+        //string? assemblyFilter = "Microsoft.EntityFrameworkCore.Relational";
+        //string? assemblyFilter = "Library.EntityFrameworkCore";
         var asm = AssemblyDefinition.ReadAssembly(args[0]);
         var globalType = (TypeDefinition)asm.MainModule.LookupToken(0x02000001);
         var types = globalType.GetTypesInformationContainer();
         var typeStats = GetTypes(types).ToList();
-        PrintTypesStatistics(typeStats);
+        PrintTypesStatistics(typeStats, assemblyFilter);
 
         Console.WriteLine();
         var methods = globalType.GetMethodsInformationContainer();
         var methodStats = GetMethods(methods).ToList();
-        PrintMethodsStatistics(methodStats);
+        PrintMethodsStatistics(methodStats, assemblyFilter);
 
         Console.WriteLine();
 
-        var methodsByNamespace = methodStats.Select(x => new TypeStats { Type = x.Method.DeclaringType, Size = x.Size + x.GcInfoSize + x.EhInfoSize })
-            .Concat(typeStats).GroupBy(x => FindNamespace(x.Type)).Select(x => new { x.Key, Sum = x.Sum(x => x.Size) }).ToList();
-        Console.WriteLine($"// ********** Size By Namespace");
-        foreach (var m in methodsByNamespace.OrderByDescending(x => x.Sum))
+        bool printByNamespaces = assemblyFilter is null;
+        if (printByNamespaces)
         {
-            Console.WriteLine($"{m.Key,-40} {m.Sum,7:n0}");
+            var methodsByNamespace = methodStats.Select(x => new TypeStats { Type = x.Method.DeclaringType, Size = x.Size + x.GcInfoSize + x.EhInfoSize })
+                .Concat(typeStats).GroupBy(x => FindNamespace(x.Type)).Select(x => new { x.Key, Sum = x.Sum(x => x.Size) }).ToList();
+            Console.WriteLine($"// ********** Size By Namespace");
+            foreach (var m in methodsByNamespace.OrderByDescending(x => x.Sum))
+            {
+                Console.WriteLine($"{m.Key,-40} {m.Sum,7:n0}");
+            }
+            Console.WriteLine($"// **********");
+
+            Console.WriteLine();
         }
-        Console.WriteLine($"// **********");
 
-        Console.WriteLine();
-
-        var blobs = globalType.GetBlobsInformationContainer();
-        var blobStats = GetBlobs(blobs).ToList();
-        PrintBlobStatistics(blobStats);
+        if (assemblyFilter is null)
+        {
+            var blobs = globalType.GetBlobsInformationContainer();
+            var blobStats = GetBlobs(blobs).ToList();
+            PrintBlobStatistics(blobStats);
+        }
     }
 
     private static void PrintBlobStatistics(List<BlobStats> blobStats)
@@ -67,8 +77,9 @@ internal class Program
         Console.WriteLine($"// **********");
     }
 
-    private static void PrintMethodsStatistics(List<MethodStats> methodStats)
+    private static void PrintMethodsStatistics(List<MethodStats> methodStats, string? assemblyFilter)
     {
+        methodStats = methodStats.Where(methodStats => IsTypeFiltered(methodStats.Method.DeclaringType, assemblyFilter)).ToList();
         var methodSize = methodStats.Sum(x => x.TotalSize);
         var methodsByModules = methodStats.GroupBy(x => x.Method.DeclaringType.Scope).Select(x => new { x.Key.Name, Sum = x.Sum(x => x.TotalSize) }).ToList();
         Console.WriteLine($"// ********** Methods Total Size {methodSize:n0}");
@@ -79,11 +90,35 @@ internal class Program
         Console.WriteLine($"// **********");
     }
 
-    private static void PrintTypesStatistics(List<TypeStats> typeStats)
+    private static bool IsTypeFiltered(TypeReference type, string? assemblyFilter)
     {
+        if (assemblyFilter is null)
+        {
+            return true;
+        }
+
+        if (type.IsGenericInstance && type is GenericInstanceType genericInstanceType)
+        {
+            return genericInstanceType.GenericArguments.Any(gp => IsTypeFiltered(gp, assemblyFilter));
+        }
+
+        return type.Scope.Name == assemblyFilter;
+    }
+
+    private static void PrintTypesStatistics(List<TypeStats> typeStats, string? assemblyFilter)
+    {
+        typeStats = typeStats.Where(type => IsTypeFiltered(type.Type, assemblyFilter)).ToList();
         var typeSize = typeStats.Sum(x => x.Size);
         var typesByModules = typeStats.GroupBy(x => x.Type.Scope).Select(x => new { x.Key.Name, Sum = x.Sum(x => x.Size) }).ToList();
-        Console.WriteLine($"// ********** Types Total Size {typeSize:n0}");
+        if (assemblyFilter is not null)
+        {
+            Console.WriteLine($"// ********** Types in assembly {assemblyFilter} Total Size {typeSize:n0}");
+        }
+        else
+        {
+            Console.WriteLine($"// ********** Types Total Size {typeSize:n0}");
+        }
+
         foreach (var m in typesByModules.OrderByDescending(x => x.Sum))
         {
             Console.WriteLine($"{m.Name,-40} {m.Sum,7:n0}");
@@ -162,13 +197,13 @@ internal static class Extension
 
 public class TypeStats
 {
-    public TypeReference Type { get; set; }
+    public required TypeReference Type { get; init; }
     public int Size { get; set; }
 }
 
 public class MethodStats
 {
-    public MethodReference Method { get; set; }
+    public required MethodReference Method { get; init; }
     public int Size { get; set; }
     public int GcInfoSize { get; set; }
     public int EhInfoSize { get; set; }
@@ -178,6 +213,6 @@ public class MethodStats
 
 public class BlobStats
 {
-    public string Name { get; set; }
+    public required string Name { get; init; }
     public int Size { get; set; }
 }
