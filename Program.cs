@@ -1,4 +1,6 @@
-﻿using Mono.Cecil;
+﻿using System.CommandLine;
+using System.Text.RegularExpressions;
+using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
 namespace NativeAOTSizeAnalyzer;
@@ -24,13 +26,29 @@ internal class Program
         }
     }
 
-    static void Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
-        string? assemblyFilter = null;
-        //string? assemblyFilter = "Microsoft.EntityFrameworkCore";
-        //string? assemblyFilter = "Microsoft.EntityFrameworkCore.Relational";
-        //string? assemblyFilter = "Library.EntityFrameworkCore";
-        var asm = AssemblyDefinition.ReadAssembly(args[0]);
+        var fileOption = new Option<FileInfo?>(
+            name: "--file",
+            description: "The file to read and display on the console.");
+        var assemblyFilterOption = new Option<string?>(
+            name: "--assembly",
+            description: "Filter types and methods to one which reference assembly with given name.");
+
+        var rootCommand = new RootCommand("Sample app for System.CommandLine");
+        rootCommand.AddOption(fileOption);
+        rootCommand.AddOption(assemblyFilterOption);
+        rootCommand.SetHandler((file, assemblyFilter) => 
+            { 
+                ReadFile(file!, assemblyFilter);
+            },
+            fileOption, assemblyFilterOption);
+        return await rootCommand.InvokeAsync(args);       
+    }
+
+    private static void ReadFile(FileInfo file, string? assemblyFilter)
+    {
+        var asm = AssemblyDefinition.ReadAssembly(file.FullName);
         var globalType = (TypeDefinition)asm.MainModule.LookupToken(0x02000001);
         var types = globalType.GetTypesInformationContainer();
         var typeStats = GetTypes(types).ToList();
@@ -58,7 +76,7 @@ internal class Program
             Console.WriteLine();
         }
 
-        if (assemblyFilter is null)
+        if (string.IsNullOrWhiteSpace(assemblyFilter))
         {
             var blobs = globalType.GetBlobsInformationContainer();
             var blobStats = GetBlobs(blobs).ToList();
@@ -90,6 +108,10 @@ internal class Program
         Console.WriteLine($"// **********");
     }
 
+    private static string WildCardToRegular(string value) {
+        return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$"; 
+    }
+
     private static bool IsTypeFiltered(TypeReference type, string? assemblyFilter)
     {
         if (assemblyFilter is null)
@@ -102,7 +124,7 @@ internal class Program
             return genericInstanceType.GenericArguments.Any(gp => IsTypeFiltered(gp, assemblyFilter));
         }
 
-        return type.Scope.Name == assemblyFilter;
+        return Regex.IsMatch(type.Scope.Name, WildCardToRegular(assemblyFilter));
     }
 
     private static void PrintTypesStatistics(List<TypeStats> typeStats, string? assemblyFilter)
