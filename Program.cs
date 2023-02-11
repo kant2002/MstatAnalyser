@@ -13,6 +13,9 @@ internal class Program
         var assemblyFilterOption = new Option<string?>(
             name: "--assembly",
             description: "Filter types and methods to one which reference assembly with given name.");
+        var excludeAssemblyFilterOption = new Option<string[]>(
+            name: "--exclude-assembly",
+            description: "Filter types and methods to one which reference assembly with given name.");
         var detailedOption = new Option<bool>(
             name: "--detailed",
             description: "List types and methods instead of providing only summary stats.");
@@ -21,7 +24,8 @@ internal class Program
         rootCommand.AddOption(fileOption);
         rootCommand.AddOption(assemblyFilterOption);
         rootCommand.AddOption(detailedOption);
-        rootCommand.SetHandler((file, assemblyFilter, detailed) => 
+        rootCommand.AddOption(excludeAssemblyFilterOption);
+        rootCommand.SetHandler((file, assemblyFilter, detailed, excludeAssemblyFilter) => 
             {
                 var fileName = file!.FullName;
                 if (!file.Exists)
@@ -46,19 +50,20 @@ internal class Program
                     }
                 }
 
-                ReadFile(fileName, assemblyFilter, detailed);
+                ReadFile(fileName, assemblyFilter, detailed, excludeAssemblyFilter);
             },
-            fileOption, assemblyFilterOption, detailedOption);
+            fileOption, assemblyFilterOption, detailedOption, excludeAssemblyFilterOption);
         return await rootCommand.InvokeAsync(args);       
     }
 
-    private static void ReadFile(string file, string? assemblyFilter, bool detailed)
+    private static void ReadFile(string file, string? assemblyFilter, bool detailed, string[] excludeAssemblyFilter)
     {
         var asm = AssemblyDefinition.ReadAssembly(file);
         var assemblyStats = new AssemblyStats(asm);
         var statsFilter = new StatsFilter
         {
             AssemblyFilter = assemblyFilter,
+            ExcludedAssemblies = excludeAssemblyFilter,
         };
         var typeStats = assemblyStats.TypeStats;
         typeStats = statsFilter.FilterTypes(typeStats);
@@ -71,7 +76,8 @@ internal class Program
 
         Console.WriteLine();
 
-        bool printByNamespaces = assemblyFilter is null;
+        bool printByNamespaces = assemblyFilter is null 
+            && (excludeAssemblyFilter is null && excludeAssemblyFilter.Length == 0);
         if (printByNamespaces)
         {
             PrintMethodsStatistics(typeStats, methodStats);
