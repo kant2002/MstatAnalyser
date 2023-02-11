@@ -118,13 +118,18 @@ internal class Program
         {
             return true;
         }
+        
+        if (Regex.IsMatch(type.Scope.Name, WildCardToRegular(assemblyFilter)))
+        {
+            return true;
+        }
 
         if (type.IsGenericInstance && type is GenericInstanceType genericInstanceType)
         {
             return genericInstanceType.GenericArguments.Any(gp => IsTypeFiltered(gp, assemblyFilter));
         }
 
-        return Regex.IsMatch(type.Scope.Name, WildCardToRegular(assemblyFilter));
+        return false;
     }
 
     private static void PrintTypesStatistics(List<TypeStats> typeStats, string? assemblyFilter)
@@ -199,42 +204,4 @@ internal class Program
             };
         }
     }
-}
-
-internal static class Extension
-{
-    public static MethodDefinition GetTypesInformationContainer(this TypeDefinition globalType)
-    {
-        return globalType.Methods.First(x => x.Name == "Types");
-    }
-    public static MethodDefinition GetMethodsInformationContainer(this TypeDefinition globalType)
-    {
-        return globalType.Methods.First(x => x.Name == "Methods");
-    }
-    public static MethodDefinition GetBlobsInformationContainer(this TypeDefinition globalType)
-    {
-        return globalType.Methods.First(x => x.Name == "Blobs");
-    }
-}
-
-public class TypeStats
-{
-    public required TypeReference Type { get; init; }
-    public int Size { get; set; }
-}
-
-public class MethodStats
-{
-    public required MethodReference Method { get; init; }
-    public int Size { get; set; }
-    public int GcInfoSize { get; set; }
-    public int EhInfoSize { get; set; }
-
-    public int TotalSize => Size + GcInfoSize + EhInfoSize;
-}
-
-public class BlobStats
-{
-    public required string Name { get; init; }
-    public int Size { get; set; }
 }
