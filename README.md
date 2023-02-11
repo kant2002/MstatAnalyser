@@ -24,4 +24,7 @@ dotnet run --file Library.mstat --assembly Microsoft.EntityFrameworkCore
 
 # Statistics about types and methods which derived from types in assemblies matching pattern Microsoft.AspNetCore.*
 dotnet run --file Library.mstat --assembly Microsoft.AspNetCore.*
+
+# You can specify folder instead of file. appication will take single file, if it preset.
+dotnet run --file ..\some-dir\
 ```
