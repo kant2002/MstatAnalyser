@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
-namespace NativeAOTSizeAnalyzer;
+namespace MstatAnalyzer;
 
 internal class Program
 {

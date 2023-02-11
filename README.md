@@ -3,7 +3,18 @@ Mstat filesize analysis
 
 Console application for getting statistic information about NativeAOT filesize.
 
-Example usage
+# How to produce mstat file in your NativeAOT application
+
+Simply add
+```
+<PropertyGroup>
+	<IlcGenerateMstatFile>true</IlcGenerateMstatFile>
+</PropertyGroup>
+```
+
+Initial idea for the application was from [@Suchiman](https://github.com/Suchiman), for which I have ethernal gratitude!
+
+# Example usage
 ```
 # Statistics about types, methods and blobs
 dotnet run --file Library.mstat

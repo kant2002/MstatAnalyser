@@ -1,4 +1,4 @@
-﻿namespace NativeAOTSizeAnalyzer;
+﻿namespace MstatAnalyzer;
 
 public class BlobStats
 {

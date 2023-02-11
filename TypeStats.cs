@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace NativeAOTSizeAnalyzer;
+namespace MstatAnalyzer;
 
 public class TypeStats
 {

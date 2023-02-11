@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace NativeAOTSizeAnalyzer;
+namespace MstatAnalyzer;
 
 internal static class Extensions
 {
