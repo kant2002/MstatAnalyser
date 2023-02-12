@@ -8,11 +8,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var type in TypeStats.GroupBy(x => x.Type.Scope).Select(x => new { x.Key.Name, Sum = x.Sum(x => x.Size) }).ToList().OrderByDescending(x => x.Sum))
+            @foreach (var type in TypeStats.OrderByDescending(x => x.Type.FullName))
             {
                 <tr>
-                    <td>@type.Name</td>
-                    <td class="text-end">@type.Sum.ToString("N0")</td>
+                    <td>@type.Type.FullName</td>
+                    <td class="text-end">@type.Size.ToString("N0")</td>
                 </tr>
             }
         </tbody>

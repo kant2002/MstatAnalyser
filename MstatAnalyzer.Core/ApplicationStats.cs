@@ -89,6 +89,11 @@ public class ApplicationStats
         }
     }
 
+    public IList<TypeStats> GetAssemblyTypes(string assemblyName)
+    {
+        return TypeStats.Where(_ => _.Type.Scope.Name == assemblyName).ToList();
+    }
+
     public static IEnumerable<TypeStats> GetTypes(MethodDefinition types)
     {
         types.Body.SimplifyMacros();

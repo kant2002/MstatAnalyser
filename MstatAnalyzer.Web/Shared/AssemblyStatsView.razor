@@ -3,7 +3,7 @@
     <table class="table table-xs">
         <thead>
             <tr>
-                <td>Type Name</td>
+                <td>Assembly</td>
                 <td class="text-end">Size</td>
                 <td class="text-end">Types</td>
                 <td class="text-end">Methods</td>
@@ -14,7 +14,7 @@
             {
                 <tr>
                     <td>@type.AssemblyName</td>
-                    <td class="text-end">@type.TotalSize.ToString("N0")</td>
+                    <td class="text-end"><a href="/types/@type.AssemblyName">@type.TotalSize.ToString("N0")</a></td>
                     <td class="text-end">@type.TypesSize.ToString("N0")</td>
                     <td class="text-end">@type.MethodsSize.ToString("N0")</td>
                 </tr>

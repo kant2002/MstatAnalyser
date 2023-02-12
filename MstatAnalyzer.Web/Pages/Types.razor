@@ -1,0 +1,21 @@
+﻿@page "/types/{assemblyName}"
+@inject AnalysisManager AnalysisManager
+@if (AssemblyName is null)
+{
+    <h3>Types from application</h3>
+}
+else
+{
+    <h3>Types from assembly @AssemblyName</h3>
+}
+
+<TypesStatsView TypeStats="TypeStats" />
+
+@code {
+    [Parameter]
+    public string? AssemblyName { get; set; }
+
+    public IList<TypeStats> TypeStats => AssemblyName is null
+        ? AnalysisManager.ApplicationStats.TypeStats
+        : AnalysisManager.ApplicationStats.GetAssemblyTypes(AssemblyName);
+}
