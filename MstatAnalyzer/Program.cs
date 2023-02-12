@@ -28,6 +28,12 @@ internal class Program
         rootCommand.AddOption(excludeAssemblyFilterOption);
         rootCommand.SetHandler((file, assemblyFilter, detailed, excludeAssemblyFilter) => 
             {
+                if (file is null)
+                {
+                    Console.WriteLine($"File for analysis does not specified.");
+                    return;
+                }
+
                 var fileName = file!.FullName;
                 if (!file.Exists)
                 {
