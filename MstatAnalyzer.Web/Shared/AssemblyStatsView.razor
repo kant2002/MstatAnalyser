@@ -1,0 +1,29 @@
+﻿@if (ApplicationStats is not null)
+{
+    <table class="table table-xs">
+        <thead>
+            <tr>
+                <td>Type Name</td>
+                <td class="text-end">Size</td>
+                <td class="text-end">Types</td>
+                <td class="text-end">Methods</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in ApplicationStats.AssemblyStats.OrderByDescending(x => x.TotalSize))
+            {
+                <tr>
+                    <td>@type.AssemblyName</td>
+                    <td class="text-end">@type.TotalSize.ToString("N0")</td>
+                    <td class="text-end">@type.TypesSize.ToString("N0")</td>
+                    <td class="text-end">@type.MethodsSize.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public ApplicationStats ApplicationStats { get; set; }
+}

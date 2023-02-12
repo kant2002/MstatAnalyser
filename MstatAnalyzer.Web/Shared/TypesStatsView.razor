@@ -1,0 +1,25 @@
+﻿@if (TypeStats is not null)
+{
+    <table class="table table-xs">
+        <thead>
+            <tr>
+                <td>Type Name</td>
+                <td class="text-end">Size</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in TypeStats.GroupBy(x => x.Type.Scope).Select(x => new { x.Key.Name, Sum = x.Sum(x => x.Size) }).ToList().OrderByDescending(x => x.Sum))
+            {
+                <tr>
+                    <td>@type.Name</td>
+                    <td class="text-end">@type.Sum.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public IList<TypeStats> TypeStats { get; set; }
+}

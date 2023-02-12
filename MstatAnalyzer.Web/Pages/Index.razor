@@ -6,7 +6,7 @@
 
 @if (AnalysisManager.FileName is null)
 {
-    <h1>Plases select file for upload!</h1>
+    <h1>Please select file for upload!</h1>
 }
 else
 {
@@ -32,34 +32,17 @@ Choose new file for analysis.
 
 <InputFile OnChange="@SingleUpload" />
 
-@if (AnalysisManager.AssemblyStats is not null)
+@if (AnalysisManager.ApplicationStats is not null)
 {
-    <table class="table table-xs">
-        <thead>
-            <tr>
-                <td>Type Name</td>
-                <td class="text-end">Size</td>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var type in ByAssembly.OrderByDescending(x => x.Size))
-            {
-                <tr>
-                    <td>@type.Name</td>
-                    <td class="text-end">@type.Size</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <text>Total: @(ByAssembly.Sum(_ => _.TotalSize).ToString("N0"))</text>
+    <AssemblyStatsView ApplicationStats="AnalysisManager.ApplicationStats" />
+    @*<TypesStatsView TypeStats="AnalysisManager.ApplicationStats.TypeStats" />*@
 }
 
 @code {
     private string? errorMessage;
     private bool loading;
-    private IEnumerable<NameSizeRow> ByAssembly => AnalysisManager.AssemblyStats!.TypeStats
-        .GroupBy(x => x.Type.Scope)
-        .Select(x => new NameSizeRow(x.Key.Name, x.Sum(x => x.Size)))
-        .ToList();
+    private IList<AssemblyStats> ByAssembly => AnalysisManager.ApplicationStats!.AssemblyStats;
 
     private async Task SingleUpload(InputFileChangeEventArgs e)
     {

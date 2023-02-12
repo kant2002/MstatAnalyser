@@ -66,18 +66,18 @@ internal class Program
     private static void ReadFile(string file, string? assemblyFilter, bool detailed, string[] excludeAssemblyFilter)
     {
         var asm = AssemblyDefinition.ReadAssembly(file);
-        var assemblyStats = new AssemblyStats(asm);
+        var applicationStats = new ApplicationStats(asm);
         var statsFilter = new StatsFilter
         {
             AssemblyFilter = assemblyFilter,
             ExcludedAssemblies = excludeAssemblyFilter,
         };
-        var typeStats = assemblyStats.TypeStats;
+        var typeStats = applicationStats.TypeStats;
         typeStats = statsFilter.FilterTypes(typeStats);
         PrintTypesStatistics(typeStats, assemblyFilter, detailed);
 
         Console.WriteLine();
-        var methodStats = assemblyStats.MethodStats;
+        var methodStats = applicationStats.MethodStats;
         methodStats = statsFilter.FilterMethods(methodStats);
         PrintMethodsStatistics(methodStats, detailed);
 
@@ -92,7 +92,7 @@ internal class Program
 
         if (string.IsNullOrWhiteSpace(assemblyFilter))
         {
-            var blobStats = assemblyStats.BlobStats;
+            var blobStats = applicationStats.BlobStats;
             PrintBlobStatistics(blobStats);
         }
     }
