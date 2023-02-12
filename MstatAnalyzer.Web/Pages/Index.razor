@@ -1,0 +1,84 @@
+﻿@page "/"
+@using Mono.Cecil;
+@inject AnalysisManager AnalysisManager
+
+<PageTitle>Index</PageTitle>
+
+@if (AnalysisManager.FileName is null)
+{
+    <h1>Plases select file for upload!</h1>
+}
+else
+{
+    <h1>Analysis of file @AnalysisManager.FileName</h1>
+}
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+@if (loading)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+
+
+Choose new file for analysis.
+
+<InputFile OnChange="@SingleUpload" />
+
+@if (AnalysisManager.AssemblyStats is not null)
+{
+    <table class="table table-xs">
+        <thead>
+            <tr>
+                <td>Type Name</td>
+                <td class="text-end">Size</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in ByAssembly.OrderByDescending(x => x.Size))
+            {
+                <tr>
+                    <td>@type.Name</td>
+                    <td class="text-end">@type.Size</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private string? errorMessage;
+    private bool loading;
+    private IEnumerable<NameSizeRow> ByAssembly => AnalysisManager.AssemblyStats!.TypeStats
+        .GroupBy(x => x.Type.Scope)
+        .Select(x => new NameSizeRow(x.Key.Name, x.Sum(x => x.Size)))
+        .ToList();
+
+    private async Task SingleUpload(InputFileChangeEventArgs e)
+    {
+        errorMessage = null;
+        loading = true;
+        try
+        {
+            MemoryStream ms = new MemoryStream();
+            await e.File.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024).CopyToAsync(ms);
+            ms.Position = 0;
+            AnalysisManager.OpenFile(e.File.Name, ms);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.ToString();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}
