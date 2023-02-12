@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace MstatAnalyzer;
+namespace MstatAnalyzer.Core;
 
 public class TypeStats
 {

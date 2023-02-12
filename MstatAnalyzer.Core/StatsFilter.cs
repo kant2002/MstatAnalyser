@@ -1,9 +1,9 @@
 ﻿using Mono.Cecil;
 using System.Text.RegularExpressions;
 
-namespace MstatAnalyzer;
+namespace MstatAnalyzer.Core;
 
-internal class StatsFilter
+public class StatsFilter
 {
     public string? AssemblyFilter { get; set; }
     public string[]? ExcludedAssemblies { get; set; }

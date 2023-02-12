@@ -1,9 +1,9 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
-namespace MstatAnalyzer;
+namespace MstatAnalyzer.Core;
 
-internal class AssemblyStats
+public class AssemblyStats
 {
     private readonly AssemblyDefinition assemblyDefinition;
     private TypeDefinition? globalType;

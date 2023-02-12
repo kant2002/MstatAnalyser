@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using Mono.Cecil;
+using MstatAnalyzer.Core;
 
 namespace MstatAnalyzer;
 
@@ -77,7 +78,7 @@ internal class Program
         Console.WriteLine();
 
         bool printByNamespaces = assemblyFilter is null 
-            && (excludeAssemblyFilter is null && excludeAssemblyFilter.Length == 0);
+            && (excludeAssemblyFilter is null || excludeAssemblyFilter.Length == 0);
         if (printByNamespaces)
         {
             PrintMethodsStatistics(typeStats, methodStats);

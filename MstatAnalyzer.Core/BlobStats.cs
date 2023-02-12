@@ -1,4 +1,4 @@
-﻿namespace MstatAnalyzer;
+﻿namespace MstatAnalyzer.Core;
 
 public class BlobStats
 {
