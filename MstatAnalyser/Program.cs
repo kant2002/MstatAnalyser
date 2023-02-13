@@ -72,12 +72,12 @@ internal class Program
             AssemblyFilter = assemblyFilter,
             ExcludedAssemblies = excludeAssemblyFilter,
         };
-        var typeStats = applicationStats.TypeStats;
+        IList<TypeStats> typeStats = applicationStats.TypeStats;
         typeStats = statsFilter.FilterTypes(typeStats);
         PrintTypesStatistics(typeStats, assemblyFilter, detailed);
 
         Console.WriteLine();
-        var methodStats = applicationStats.MethodStats;
+        IList<MethodStats> methodStats = applicationStats.MethodStats;
         methodStats = statsFilter.FilterMethods(methodStats);
         PrintMethodsStatistics(methodStats, detailed);
 

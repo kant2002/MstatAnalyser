@@ -1,6 +1,5 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using System.Linq;
 
 namespace MstatAnalyser.Core;
 
@@ -8,9 +7,9 @@ public class ApplicationStats
 {
     private readonly AssemblyDefinition assemblyDefinition;
     private TypeDefinition? globalType;
-    private IList<TypeStats>? typeStats;
-    private IList<MethodStats>? methodStats;
-    private IList<BlobStats>? blobStats;
+    private TypeStats[]? typeStats;
+    private MethodStats[]? methodStats;
+    private BlobStats[]? blobStats;
     private IList<AssemblyStats>? assemblyStats;
 
     public ApplicationStats(AssemblyDefinition assemblyDefinition)
@@ -18,60 +17,10 @@ public class ApplicationStats
         this.assemblyDefinition = assemblyDefinition;
     }
 
-    public TypeDefinition GlobalType
-    {
-        get
-        {
-            if (globalType == null)
-            {
-                globalType = (TypeDefinition)assemblyDefinition.MainModule.LookupToken(0x02000001);
-            }
-
-            return globalType;
-        }
-    }
-
-    public IList<TypeStats> TypeStats
-    {
-        get
-        {
-            if (typeStats == null)
-            {
-                var types = GlobalType.GetTypesInformationContainer();
-                typeStats = GetTypes(types).ToList();
-            }
-
-            return typeStats;
-        }
-    }
-
-    public IList<MethodStats> MethodStats
-    {
-        get
-        {
-            if (methodStats == null)
-            {
-                var methods = GlobalType.GetMethodsInformationContainer();
-                methodStats = GetMethods(methods).ToList();
-            }
-
-            return methodStats;
-        }
-    }
-
-    public IList<BlobStats> BlobStats
-    {
-        get
-        {
-            if (blobStats == null)
-            {
-                var methods = GlobalType.GetBlobsInformationContainer();
-                blobStats = GetBlobs(methods).ToList();
-            }
-
-            return blobStats;
-        }
-    }
+    public TypeDefinition GlobalType => globalType ??= (TypeDefinition)assemblyDefinition.MainModule.LookupToken(0x02000001);
+    public TypeStats[] TypeStats => typeStats ??= GetTypes(GlobalType.GetTypesInformationContainer());
+    public MethodStats[] MethodStats => methodStats ??= GetMethods(GlobalType.GetMethodsInformationContainer());
+    public BlobStats[] BlobStats => blobStats ??= GetBlobs(GlobalType.GetBlobsInformationContainer());
 
     public IList<AssemblyStats> AssemblyStats
     {
@@ -95,33 +44,48 @@ public class ApplicationStats
         return TypeStats.Where(_ => _.PrimaryAssembly == assemblyName).ToList();
     }
 
-    public static IEnumerable<TypeStats> GetTypes(MethodDefinition types)
+    private TypeStats[] GetTypes(MethodDefinition types)
     {
         types.Body.SimplifyMacros();
         var il = types.Body.Instructions;
-        for (int i = 0; i + 2 < il.Count; i += 2)
+        var result = new List<TypeStats>(il.Count / 2);
+        for (int i = 0; i + 2 <= il.Count; i += 2)
         {
             var type = (TypeReference)il[i + 0].Operand;
             var size = (int)il[i + 1].Operand;
-            yield return new TypeStats
+            result.Add(new TypeStats
             {
                 Type = type,
                 Size = size
-            };
+            });
         }
+        var dic = result.ToDictionary(x => x.Type.MetadataToken);
+        foreach (var m in MethodStats)
+        {
+            if (!dic.TryGetValue(m.Method.DeclaringType.MetadataToken, out var type))
+            {
+                type = new TypeStats { Type = m.Method.DeclaringType };
+                dic.Add(type.Type.MetadataToken, type);
+                result.Add(type);
+            }
+            type.Methods.Add(m);
+        }
+        return result.ToArray();
     }
 
-    public static IEnumerable<MethodStats> GetMethods(MethodDefinition methods)
+    private MethodStats[] GetMethods(MethodDefinition methods)
     {
         methods.Body.SimplifyMacros();
         var il = methods.Body.Instructions;
-        for (int i = 0; i + 4 < il.Count; i += 4)
+        var result = new MethodStats[il.Count / 4];
+        var resultI = 0;
+        for (int i = 0; i + 4 <= il.Count; i += 4)
         {
             var method = (MethodReference)il[i + 0].Operand;
             var size = (int)il[i + 1].Operand;
             var gcInfoSize = (int)il[i + 2].Operand;
             var ehInfoSize = (int)il[i + 3].Operand;
-            yield return new MethodStats
+            result[resultI++] = new MethodStats
             {
                 Method = method,
                 Size = size,
@@ -129,21 +93,25 @@ public class ApplicationStats
                 EhInfoSize = ehInfoSize
             };
         }
+        return result;
     }
 
-    public static IEnumerable<BlobStats> GetBlobs(MethodDefinition blobs)
+    private BlobStats[] GetBlobs(MethodDefinition blobs)
     {
         blobs.Body.SimplifyMacros();
         var il = blobs.Body.Instructions;
-        for (int i = 0; i + 2 < il.Count; i += 2)
+        var result = new BlobStats[il.Count / 2];
+        var resultI = 0;
+        for (int i = 0; i + 2 <= il.Count; i += 2)
         {
             var name = (string)il[i + 0].Operand;
             var size = (int)il[i + 1].Operand;
-            yield return new BlobStats
+            result[resultI++] = new BlobStats
             {
                 Name = name,
                 Size = size
             };
         }
+        return result;
     }
 }

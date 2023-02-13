@@ -1,0 +1,32 @@
+﻿@page "/ByTypes"
+@using System.Net;
+
+<PageTitle>Types</PageTitle>
+
+<h2>Types in Namespace @Namespace of Assembly @Assembly</h2>
+
+@if (Types != null)
+{
+    <div class="row">
+        <div class="card col-md-6">
+            <div class="card-body">
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@Types.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <TemplateColumn Title="Name">
+                            @if (context.Count > 1)
+                            {
+                                <a href="/ByInstantiations?assembly=@WebUtility.UrlEncode(Assembly)&ns=@WebUtility.UrlEncode(Namespace)&type=@WebUtility.UrlEncode(context.Name)">@context.Name</a>
+                            }
+                            else
+                            {
+                                <a href="/ByMethods?assembly=@WebUtility.UrlEncode(Assembly)&ns=@WebUtility.UrlEncode(Namespace)&type=@WebUtility.UrlEncode(context.Name)">@context.Name</a>
+                            }
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Count)" Title="Instantiations" Format="N0" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+    </div>
+}
