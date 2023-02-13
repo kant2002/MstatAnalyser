@@ -10,8 +10,8 @@ public class StatsFilter
 
     public IList<TypeStats> FilterTypes(IList<TypeStats> typeStats)
     {
-        return typeStats.Where(type => IsTypeFiltered(type.Type, AssemblyFilter)
-            && (ExcludedAssemblies is null || !IsTypeFiltered(type.Type, ExcludedAssemblies))).ToList();
+        return typeStats.Where(type => IsTypeFiltered(type, AssemblyFilter)
+            && (ExcludedAssemblies is null || !IsTypeFiltered(type, ExcludedAssemblies))).ToList();
     }
 
     public IList<MethodStats> FilterMethods(IList<MethodStats> methodStats)
@@ -28,6 +28,21 @@ public class StatsFilter
     private static bool IsTypeFiltered(TypeReference type, string[] assemblyFilter)
     {
         return assemblyFilter.Any(f => IsTypeFiltered(type, f));
+    }
+
+    private static bool IsTypeFiltered(TypeStats type, string[] assemblyFilter)
+    {
+        return assemblyFilter.Any(f => IsTypeFiltered(type, f));
+    }
+
+    private static bool IsTypeFiltered(TypeStats type, string? assemblyFilter)
+    {
+        if (assemblyFilter is null)
+        {
+            return true;
+        }
+
+        return type.RelatedAssemblies.Any(assemblyName => Regex.IsMatch(assemblyName, WildCardToRegular(assemblyFilter)));
     }
 
     private static bool IsTypeFiltered(TypeReference type, string? assemblyFilter)

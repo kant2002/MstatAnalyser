@@ -17,17 +17,17 @@ Initial idea for the application was from [@Suchiman](https://github.com/Suchima
 # Example usage
 ```
 # Statistics about types, methods and blobs
-dotnet run --file Library.mstat
+dotnet run --project MstatAnalyzer\MstatAnalyzer.csproj --file Library.mstat
 
 # Statistics about types and methods which derived from types in assembly Microsoft.EntityFrameworkCore
-dotnet run --file Library.mstat --assembly Microsoft.EntityFrameworkCore
+dotnet run --project MstatAnalyzer\MstatAnalyzer.csproj --file Library.mstat --assembly Microsoft.EntityFrameworkCore
 
 # Statistics about types and methods which derived from types in assemblies matching pattern Microsoft.AspNetCore.*
-dotnet run --file Library.mstat --assembly Microsoft.AspNetCore.*
+dotnet run --project MstatAnalyzer\MstatAnalyzer.csproj --file Library.mstat --assembly Microsoft.AspNetCore.*
 
 # Exclude assemblies using multiple --exclude-assembly parameter
-dotnet run --file Library.mstat --exclude-assembly Microsoft.AspNetCore.* --exclude-assembly Microsoft.EntityFrameworkCore* --exclude-assembly Microsoft.Identity* --exclude-assembly Microsoft.Data.SqlClient --exclude-assembly Microsoft.Extensions.*
+dotnet run --project MstatAnalyzer\MstatAnalyzer.csproj --file Library.mstat --exclude-assembly Microsoft.AspNetCore.* --exclude-assembly Microsoft.EntityFrameworkCore* --exclude-assembly Microsoft.Identity* --exclude-assembly Microsoft.Data.SqlClient --exclude-assembly Microsoft.Extensions.*
 
 # You can specify folder instead of file. appication will take single file, if it preset.
-dotnet run --file ..\some-dir\
+dotnet run --project MstatAnalyzer\MstatAnalyzer.csproj --file ..\some-dir\
 ```
