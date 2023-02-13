@@ -23,7 +23,7 @@ public class TypeStats
         }
     }
 
-    private IEnumerable<string> GetTypeAssemblies(TypeReference type)
+    internal static IEnumerable<string> GetTypeAssemblies(TypeReference type)
     {
         yield return type.Scope.Name;
         if (type.IsGenericInstance && type is GenericInstanceType genericInstanceType)

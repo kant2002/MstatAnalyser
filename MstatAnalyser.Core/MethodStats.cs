@@ -19,12 +19,12 @@ public class MethodStats
         {
             if (relatedAssemblies is null)
             {
-                relatedAssemblies = new List<string>(GetTypeAssemblies(Method.DeclaringType).Distinct());
+                relatedAssemblies = new List<string>(TypeStats.GetTypeAssemblies(Method.DeclaringType).Distinct());
                 if (Method.IsGenericInstance && Method is GenericInstanceMethod genericInstanceMethod)
                 {
                     foreach (var ga in genericInstanceMethod.GenericArguments)
                     {
-                        relatedAssemblies.AddRange(GetTypeAssemblies(ga));
+                        relatedAssemblies.AddRange(TypeStats.GetTypeAssemblies(ga));
                     }
 
                     relatedAssemblies = relatedAssemblies.Distinct().ToList();
@@ -32,21 +32,6 @@ public class MethodStats
             }
 
             return relatedAssemblies;
-        }
-    }
-
-    private IEnumerable<string> GetTypeAssemblies(TypeReference type)
-    {
-        yield return type.Scope.Name;
-        if (type.IsGenericInstance && type is GenericInstanceType genericInstanceType)
-        {
-            foreach (var subArgument in genericInstanceType.GenericArguments)
-            {
-                foreach (var subAssembly in GetTypeAssemblies(subArgument))
-                {
-                    yield return subAssembly;
-                }
-            }
         }
     }
 }
