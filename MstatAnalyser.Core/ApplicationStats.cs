@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Rocks;
+using System.Linq;
 
 namespace MstatAnalyser.Core;
 
@@ -78,10 +79,10 @@ public class ApplicationStats
         {
             if (assemblyStats == null)
             {
-                assemblyStats = TypeStats.Select(_ => new { _.Type.Scope, TypeSize = _.Size, MethodSize = 0 })
-                    .Concat(MethodStats.Select(_ => new { _.Method.DeclaringType.Scope, TypeSize = 0, MethodSize = _.TotalSize }))
-                    .GroupBy(x => x.Scope)
-                    .Select(x => new AssemblyStats { AssemblyName = x.Key.Name, TypesSize = x.Sum(x => x.TypeSize), MethodsSize = x.Sum(x => x.MethodSize) })
+                assemblyStats = TypeStats.Select(_ => new { _.PrimaryAssembly, TypeSize = _.Size, MethodSize = 0 })
+                    .Concat(MethodStats.Select(_ => new { _.PrimaryAssembly, TypeSize = 0, MethodSize = _.TotalSize }))
+                    .GroupBy(x => x.PrimaryAssembly)
+                    .Select(x => new AssemblyStats { AssemblyName = x.Key, TypesSize = x.Sum(x => x.TypeSize), MethodsSize = x.Sum(x => x.MethodSize) })
                     .ToList();
             }
 
@@ -91,7 +92,7 @@ public class ApplicationStats
 
     public IList<TypeStats> GetAssemblyTypes(string assemblyName)
     {
-        return TypeStats.Where(_ => _.Type.Scope.Name == assemblyName).ToList();
+        return TypeStats.Where(_ => _.PrimaryAssembly == assemblyName).ToList();
     }
 
     public static IEnumerable<TypeStats> GetTypes(MethodDefinition types)
