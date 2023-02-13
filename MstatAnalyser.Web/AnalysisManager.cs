@@ -8,10 +8,13 @@ public class AnalysisManager
     public ApplicationStats? ApplicationStats { get; private set; }
     public string? FileName { get; private set; }
 
+    public event Action<ApplicationStats?>? ApplicationStatsChanged;
+
     public void OpenFile(string fileName, Stream data)
     {
         this.FileName = fileName;
         var asm = AssemblyDefinition.ReadAssembly(data);
         this.ApplicationStats = new ApplicationStats(asm);
+        this.ApplicationStatsChanged?.Invoke(ApplicationStats);
     }
 }
