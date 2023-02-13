@@ -7,15 +7,9 @@
     <p>Please load file for analysis.</p>
 }
 else
-{
-    
+{   
     <QuickGrid Items="AnalysisManager.ApplicationStats.BlobStats.AsQueryable()" Class="table table-xs" Theme="bootstrap">
         <PropertyColumn Property="@(x => x.Name)" Sortable="true" />
         <PropertyColumn Property="@(x => x.Size)" Sortable="true" Format="N0" IsDefaultSort="SortDirection.Descending" Class="text-end" />
-
     </QuickGrid>
-}
-
-@code {
-
 }
