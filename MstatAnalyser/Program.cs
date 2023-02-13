@@ -1,8 +1,8 @@
 ﻿using System.CommandLine;
 using Mono.Cecil;
-using MstatAnalyzer.Core;
+using MstatAnalyser.Core;
 
-namespace MstatAnalyzer;
+namespace MstatAnalyser;
 
 internal class Program
 {

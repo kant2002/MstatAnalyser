@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace MstatAnalyzer.Core;
+namespace MstatAnalyser.Core;
 
 internal static class Extensions
 {

@@ -1,6 +1,6 @@
 {
-  "name": "MstatAnalyzer.Web",
-  "short_name": "MstatAnalyzer.Web",
+  "name": "MstatAnalyser.Web",
+  "short_name": "MstatAnalyser.Web",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

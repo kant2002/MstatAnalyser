@@ -1,7 +1,7 @@
 ﻿using Mono.Cecil;
 using System.Text.RegularExpressions;
 
-namespace MstatAnalyzer.Core;
+namespace MstatAnalyser.Core;
 
 public class StatsFilter
 {

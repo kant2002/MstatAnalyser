@@ -1,4 +1,4 @@
-﻿namespace MstatAnalyzer.Core;
+﻿namespace MstatAnalyser.Core;
 
 public class AssemblyStats
 {

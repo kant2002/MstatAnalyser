@@ -1,7 +1,7 @@
-﻿using MstatAnalyzer.Core;
+﻿using MstatAnalyser.Core;
 using Mono.Cecil;
 
-namespace MstatAnalyzer.Web;
+namespace MstatAnalyser.Web;
 
 public class AnalysisManager
 {

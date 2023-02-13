@@ -1,7 +1,7 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
-namespace MstatAnalyzer.Core;
+namespace MstatAnalyser.Core;
 
 public class ApplicationStats
 {
