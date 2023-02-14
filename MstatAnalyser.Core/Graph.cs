@@ -142,7 +142,42 @@ public class DGMLGraphProcessing
         const string ReflectableModuleStartMarker = "Reflectable module: ";
         if (label.StartsWith(ReflectableModuleStartMarker))
         {
-            return new ReflectableModuleNode(id, label.Substring(ReflectableModuleStartMarker.Length));
+            return new ModuleMetadataNode(id, label.Substring(ReflectableModuleStartMarker.Length));
+        }
+
+        const string ReflectedMethodStartMarker = "Reflectable method: ";
+        if (label.StartsWith(ReflectedMethodStartMarker))
+        {
+            return new ReflectedMethodNode(id, label.Substring(ReflectedMethodStartMarker.Length));
+        }
+
+        const string ReflectedFieldStartMarker = "Reflectable field: ";
+        if (label.StartsWith(ReflectedFieldStartMarker))
+        {
+            return new ReflectedFieldNode(id, label.Substring(ReflectedFieldStartMarker.Length));
+        }
+        
+        const string ReflectedTypeStartMarker = "Reflectable type: ";
+        if (label.StartsWith(ReflectedTypeStartMarker))
+        {
+            return new ReflectedTypeNode(id, label.Substring(ReflectedTypeStartMarker.Length));
+        }
+
+        const string CustomAttributeMetadataStartMarker = "Reflectable custom attribute ";
+        if (label.StartsWith(CustomAttributeMetadataStartMarker))
+        {
+            var parts = label.Substring(CustomAttributeMetadataStartMarker.Length).Split(" in ");
+            return new CustomAttributeMetadataNode(id, parts[0], parts[1]);
+        }
+
+        if (label.StartsWith("??_7") && label.EndsWith("@@6B@"))
+        {
+            var mangledMethodTable = label.Substring(4, label.Length - 9);
+            const string BoxedStartMarker = "Boxed_";
+            if (mangledMethodTable.StartsWith(BoxedStartMarker))
+                return new MethodTableNode(id, mangledMethodTable.Substring(BoxedStartMarker.Length), true);
+
+            return new MethodTableNode(id, mangledMethodTable, false);
         }
 
         const string ConstructedEETypeEndMarker = " constructed";
@@ -163,9 +198,9 @@ public class RegionNode : Node
     }
 }
 
-public class ReflectableModuleNode : Node
+public class ModuleMetadataNode : Node
 {
-    public ReflectableModuleNode(int id, string assemblyFullName)
+    public ModuleMetadataNode(int id, string assemblyFullName)
         : base(id, assemblyFullName)
     {
     }
@@ -177,4 +212,52 @@ public class ConstructedEETypeNode : Node
         : base(id, mangledName)
     {
     }
+}
+
+public class ReflectedMethodNode : Node
+{
+    public ReflectedMethodNode(int id, string methodFullName)
+        : base(id, methodFullName)
+    {
+    }
+}
+
+public class ReflectedFieldNode : Node
+{
+    public ReflectedFieldNode(int id, string methodFullName)
+        : base(id, methodFullName)
+    {
+    }
+}
+
+public class MethodTableNode : Node
+{
+    public MethodTableNode(int id, string methodFullName, bool isBoxed)
+        : base(id, methodFullName)
+    {
+        IsBoxed = isBoxed;
+    }
+
+    public bool IsBoxed { get; }
+}
+
+public class ReflectedTypeNode : Node
+{
+    public ReflectedTypeNode(int id, string methodFullName)
+        : base(id, methodFullName)
+    {
+    }
+
+    public bool IsBoxed { get; }
+}
+
+public class CustomAttributeMetadataNode : Node
+{
+    public CustomAttributeMetadataNode(int id, string attributeTypeName, string assemblyName)
+        : base(id, attributeTypeName)
+    {
+        AssemblyName = assemblyName;
+    }
+
+    public string AssemblyName { get; }
 }
