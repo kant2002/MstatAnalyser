@@ -38,7 +38,7 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build --verbosity normal
       - name: Publish
-        run: dotnet publish MstatAnalyser.Web/MstatAnalyser.Web.csproj -c Release -o release --no-build --verbosity normal
+        run: dotnet publish MstatAnalyser.Web/MstatAnalyser.Web.csproj -c Release -o release --verbosity normal
       - name: Change base-tag in index.html from / to MstatAnalyser
         run: sed -i 's/<base href="\/" \/>/<base href="\/MstatAnalyser\/" \/>/g' release/wwwroot/index.html
       - name: Add .nojekyll file
