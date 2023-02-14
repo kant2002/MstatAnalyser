@@ -1,0 +1,36 @@
+﻿@page "/ByAssembly"
+@using System.Net;
+
+<PageTitle>ByAssembly</PageTitle>
+
+
+@if (SizeByAssembly != null)
+{
+    <div class="row">
+        <div class="card col-md-6">
+            <div class="card-body">
+                <h2>Assemblies</h2>
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@SizeByAssembly.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <TemplateColumn Title="Name">
+                            <a href="/ByNamespace?assembly=@WebUtility.UrlEncode(context.Name)">@context.Name</a>
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-md-6">
+            <div class="card-body">
+                <h2>Blobs</h2>
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@BlobStats.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+    </div>
+}

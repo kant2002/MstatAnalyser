@@ -1,0 +1,22 @@
+﻿@page "/ByMethodInstantiations"
+@using System.Net;
+
+<PageTitle>Methods</PageTitle>
+
+<h2>Method Instantiations in Type @Namespace.@Type of Assembly @Assembly</h2>
+
+@if (Methods != null)
+{
+    <div class="row">
+        <div class="card col-md-6">
+            <div class="card-body">
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@Methods.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+    </div>
+}

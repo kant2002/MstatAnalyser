@@ -1,0 +1,24 @@
+﻿@page "/ByNamespace"
+@using System.Net;
+
+<PageTitle>Namespaces</PageTitle>
+
+<h2>Namespaces of Assembly @Assembly</h2>
+
+@if (MethodsByNamespace != null)
+{
+    <div class="row">
+        <div class="card col-md-6">
+            <div class="card-body">
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@MethodsByNamespace.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <TemplateColumn Title="Name">
+                            <a href="/ByTypes?assembly=@WebUtility.UrlEncode(Assembly)&ns=@WebUtility.UrlEncode(context.Name)">@context.Name</a>
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+    </div>
+}

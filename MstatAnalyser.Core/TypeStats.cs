@@ -8,6 +8,8 @@ public class TypeStats
 
     public required TypeReference Type { get; init; }
     public int Size { get; set; }
+    public int TotalSize => Size + Methods.Sum(x => x.TotalSize);
+    public List<MethodStats> Methods { get; set; } = new();
 
     public string PrimaryAssembly => Type.Scope.Name;
     public List<string> RelatedAssemblies

@@ -1,0 +1,32 @@
+﻿@page "/ByMethods"
+@using System.Net;
+
+<PageTitle>Methods</PageTitle>
+
+<h2>Methods in Type @Namespace.@Type of Assembly @Assembly</h2>
+
+@if (Methods != null)
+{
+    <div class="row">
+        <div class="card col-md-6">
+            <div class="card-body">
+                <div tabindex="-1" style="height: 50rem; overflow-y: auto">
+                    <QuickGrid Items="@Methods.AsQueryable()" ResizableColumns="true" Class="table table-striped">
+                        <TemplateColumn Title="Name" Sortable="true">
+                            @if (context.Count > 1)
+                            {
+                                <a href="/ByMethodInstantiations?assembly=@WebUtility.UrlEncode(Assembly)&ns=@WebUtility.UrlEncode(Namespace)&type=@WebUtility.UrlEncode(Type)&method=@WebUtility.UrlEncode(context.Name)">@context.Name</a>
+                            }
+                            else
+                            {
+                                @context.Name
+                            }
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Count)" Title="Instantiations" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.Size)" Format="N0" Sortable="true" IsDefaultSort="SortDirection.Descending" />
+                    </QuickGrid>
+                </div>
+            </div>
+        </div>
+    </div>
+}
