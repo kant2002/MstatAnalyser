@@ -200,6 +200,25 @@ public class DGMLGraphProcessing
             return new FieldMetadataNode(id, label.Substring(FieldMetadataStartMarker.Length));
         }
 
+        const string WritableDataStartMarker = "__writableData";
+        if (label.StartsWith(WritableDataStartMarker))
+        {
+            return new WritableDataNode(id, label.Substring(WritableDataStartMarker.Length));
+        }
+
+        const string EETypeOptionalFieldsStartMarker = "__optionalfields_";
+        if (label.StartsWith(EETypeOptionalFieldsStartMarker))
+        {
+            var (mangledMethodTable, isBoxed) = ParseMangledName(label.Substring(EETypeOptionalFieldsStartMarker.Length));
+            return new EETypeOptionalFieldsNode(id, mangledMethodTable);
+        }
+
+        const string MethodMetadataStartMarker = "Method metadata: ";
+        if (label.StartsWith(MethodMetadataStartMarker))
+        {
+            return new MethodMetadataNode(id, label.Substring(MethodMetadataStartMarker.Length));
+        }
+
         const string GenericCompositionStartMarker = "__GenericInstance";
         if (label.StartsWith(GenericCompositionStartMarker))
         {
@@ -375,4 +394,28 @@ public class GenericCompositionNode : Node
     }
 
     public int[] Variance { get; }
+}
+
+public class WritableDataNode : Node
+{
+    public WritableDataNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class EETypeOptionalFieldsNode : Node
+{
+    public EETypeOptionalFieldsNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class MethodMetadataNode : Node
+{
+    public MethodMetadataNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
 }

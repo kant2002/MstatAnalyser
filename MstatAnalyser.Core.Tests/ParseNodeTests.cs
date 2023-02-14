@@ -175,4 +175,34 @@ public class ParseNodeTests
         Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext", regionNode.Name);
         CollectionAssert.AreEqual(Array.Empty<int>(), regionNode.Variance);
     }
+
+    [TestMethod]
+    public void ParseWritableDataNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__writableDataMicrosoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute");
+        Assert.IsNotNull(node);
+        var regionNode = (WritableDataNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseEETypeOptionalFieldsNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__optionalfields_??_7Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute@@6B@");
+        Assert.IsNotNull(node);
+        var regionNode = (EETypeOptionalFieldsNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseMethodMetadataNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Method metadata: [Microsoft.AspNetCore.Html.Abstractions]Microsoft.CodeAnalysis.EmbeddedAttribute..ctor()");
+        Assert.IsNotNull(node);
+        var regionNode = (MethodMetadataNode)node;
+
+        Assert.AreEqual("[Microsoft.AspNetCore.Html.Abstractions]Microsoft.CodeAnalysis.EmbeddedAttribute..ctor()", regionNode.Name);
+    }
 }
