@@ -475,5 +475,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Project specific files
 *.mstat
 *.txt
+*.dgml.xml
+*.7z
