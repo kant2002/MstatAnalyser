@@ -93,4 +93,86 @@ public class ParseNodeTests
         Assert.AreEqual("System.Reflection.Metadata.CustomAttributeHandle", regionNode.Name);
         Assert.AreEqual("Library", regionNode.AssemblyName);
     }
+
+    [TestMethod]
+    public void ParseVTableSliceNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__vtable_S_P_CoreLib_System_Collections_Generic_IEnumerable_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>");
+        Assert.IsNotNull(node);
+        var regionNode = (VTableSliceNode)node;
+
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_IEnumerable_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseInterfaceDispatchMapNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__InterfaceDispatchMap_S_P_CoreLib_System_Collections_Generic_List_1_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext_");
+        Assert.IsNotNull(node);
+        var regionNode = (InterfaceDispatchMapNode)node;
+
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_List_1_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext_", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseSealedVTableNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__SealedVTable_??_7Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute@@6B@");
+        Assert.IsNotNull(node);
+        var regionNode = (SealedVTableNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Hosting_RazorCompiledItemAttribute", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseTypeGenericDictionaryNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GenericDict_S_P_CoreLib_System_Collections_Generic_List_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>");
+        Assert.IsNotNull(node);
+        var regionNode = (GenericDictionaryNode)node;
+
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_List_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseDictionaryLayoutNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Dictionary layout for [S.P.CoreLib]System.Collections.Generic.IReadOnlyList`1<System.__Canon>");
+        Assert.IsNotNull(node);
+        var regionNode = (DictionaryLayoutNode)node;
+
+        Assert.AreEqual("[S.P.CoreLib]System.Collections.Generic.IReadOnlyList`1<System.__Canon>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseFieldMetadataNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Field metadata: [Microsoft.AspNetCore.Razor.Runtime]Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager+ExecutionContextPool._nextIndex");
+        Assert.IsNotNull(node);
+        var regionNode = (FieldMetadataNode)node;
+
+        Assert.AreEqual("[Microsoft.AspNetCore.Razor.Runtime]Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager+ExecutionContextPool._nextIndex", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseGenericCompositionNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GenericInstance_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext__Variance___1");
+        Assert.IsNotNull(node);
+        var regionNode = (GenericCompositionNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext", regionNode.Name);
+        CollectionAssert.AreEqual(new[] { 1 }, regionNode.Variance);
+    }
+
+    [TestMethod]
+    public void ParseGenericCompositionNodeNoVariance()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GenericInstance_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext");
+        Assert.IsNotNull(node);
+        var regionNode = (GenericCompositionNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext", regionNode.Name);
+        CollectionAssert.AreEqual(Array.Empty<int>(), regionNode.Variance);
+    }
 }

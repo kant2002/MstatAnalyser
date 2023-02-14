@@ -163,6 +163,56 @@ public class DGMLGraphProcessing
             return new ReflectedTypeNode(id, label.Substring(ReflectedTypeStartMarker.Length));
         }
 
+        const string VTableSliceStartMarker = "__vtable_";
+        if (label.StartsWith(VTableSliceStartMarker))
+        {
+            return new VTableSliceNode(id, label.Substring(VTableSliceStartMarker.Length));
+        }
+
+        const string SealedVTableStartMarker = "__SealedVTable_";
+        if (label.StartsWith(SealedVTableStartMarker))
+        {
+            var (mangledMethodTable, _) = ParseMangledName(label.Substring(SealedVTableStartMarker.Length));
+            return new SealedVTableNode(id, mangledMethodTable);
+        }
+
+        const string GenericDictionaryStartMarker = "__GenericDict_";
+        if (label.StartsWith(GenericDictionaryStartMarker))
+        {
+            return new GenericDictionaryNode(id, label.Substring(GenericDictionaryStartMarker.Length));
+        }
+
+        const string DictionaryLayoutStartMarker = "Dictionary layout for ";
+        if (label.StartsWith(DictionaryLayoutStartMarker))
+        {
+            return new DictionaryLayoutNode(id, label.Substring(DictionaryLayoutStartMarker.Length));
+        }
+
+        const string InterfaceDispatchMapStartMarker = "__InterfaceDispatchMap_";
+        if (label.StartsWith(InterfaceDispatchMapStartMarker))
+        {
+            return new InterfaceDispatchMapNode(id, label.Substring(InterfaceDispatchMapStartMarker.Length));
+        }
+
+        const string FieldMetadataStartMarker = "Field metadata: ";
+        if (label.StartsWith(FieldMetadataStartMarker))
+        {
+            return new FieldMetadataNode(id, label.Substring(FieldMetadataStartMarker.Length));
+        }
+
+        const string GenericCompositionStartMarker = "__GenericInstance";
+        if (label.StartsWith(GenericCompositionStartMarker))
+        {
+            var nomarker = label.Substring(GenericCompositionStartMarker.Length);
+            //if (nomarker.StartsWith('_'))
+            {
+                var parts = nomarker.Substring(1).Split("__Variance__");
+                if (parts.Length == 1)
+                    return new GenericCompositionNode(id, parts[0], Array.Empty<int>());
+                return new GenericCompositionNode(id, parts[0], parts[1].Split('_', StringSplitOptions.RemoveEmptyEntries).Select(variance => int.Parse(variance)).ToArray());
+            }
+        }
+
         const string CustomAttributeMetadataStartMarker = "Reflectable custom attribute ";
         if (label.StartsWith(CustomAttributeMetadataStartMarker))
         {
@@ -172,12 +222,8 @@ public class DGMLGraphProcessing
 
         if (label.StartsWith("??_7") && label.EndsWith("@@6B@"))
         {
-            var mangledMethodTable = label.Substring(4, label.Length - 9);
-            const string BoxedStartMarker = "Boxed_";
-            if (mangledMethodTable.StartsWith(BoxedStartMarker))
-                return new MethodTableNode(id, mangledMethodTable.Substring(BoxedStartMarker.Length), true);
-
-            return new MethodTableNode(id, mangledMethodTable, false);
+            var (mangledMethodTable, isBoxed) = ParseMangledName(label);
+            return new MethodTableNode(id, mangledMethodTable, isBoxed);
         }
 
         const string ConstructedEETypeEndMarker = " constructed";
@@ -187,6 +233,16 @@ public class DGMLGraphProcessing
         }
 
         return new Node(id, label);
+    }
+
+    private static (string UnmangledName, bool IsBoxed) ParseMangledName(string label)
+    {
+        var mangledMethodTable = label.Substring(4, label.Length - 9);
+        const string BoxedStartMarker = "Boxed_";
+        if (mangledMethodTable.StartsWith(BoxedStartMarker))
+            return (mangledMethodTable.Substring(BoxedStartMarker.Length), true);
+
+        return (mangledMethodTable, false);
     }
 }
 
@@ -260,4 +316,63 @@ public class CustomAttributeMetadataNode : Node
     }
 
     public string AssemblyName { get; }
+}
+
+public class VTableSliceNode : Node
+{
+    public VTableSliceNode(int id, string typeName)
+        : base(id, typeName)
+    {
+    }
+}
+
+public class InterfaceDispatchMapNode : Node
+{
+    public InterfaceDispatchMapNode(int id, string typeName)
+        : base(id, typeName)
+    {
+    }
+}
+
+public class SealedVTableNode : Node
+{
+    public SealedVTableNode(int id, string typeName)
+        : base(id, typeName)
+    {
+    }
+}
+
+public class GenericDictionaryNode : Node
+{
+    public GenericDictionaryNode(int id, string typeName)
+        : base(id, typeName)
+    {
+    }
+}
+
+public class DictionaryLayoutNode : Node
+{
+    public DictionaryLayoutNode(int id, string typeName)
+        : base(id, typeName)
+    {
+    }
+}
+
+public class FieldMetadataNode : Node
+{
+    public FieldMetadataNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class GenericCompositionNode : Node
+{
+    public GenericCompositionNode(int id, string typeName, int[] variance)
+        : base(id, typeName)
+    {
+        Variance = variance;
+    }
+
+    public int[] Variance { get; }
 }
