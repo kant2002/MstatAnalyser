@@ -51,7 +51,7 @@ jobs:
           path: ./release/wwwroot
 
   # Deployment job
-  deploy:
+  tetst-deploy:
     environment:
       name: github-pages-test
       url: ${{ steps.deployment.outputs.page_url }}-pr-${{ github.event.pull_request.number }}
