@@ -59,7 +59,7 @@ public class ParseNodeTests
         var regionNode = (MethodTableNode)node;
 
         Assert.AreEqual("Microsoft_AspNetCore_Mvc_Core__Module_", regionNode.Name);
-        Assert.IsFalse(regionNode.IsBoxed);
+        Assert.IsFalse(regionNode.IsBoxedValueType);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class ParseNodeTests
         var regionNode = (MethodTableNode)node;
 
         Assert.AreEqual("Microsoft_AspNetCore_Mvc_Core_Microsoft_Extensions_Internal_CopyOnWriteDictionaryHolder_2", regionNode.Name);
-        Assert.IsTrue(regionNode.IsBoxed);
+        Assert.IsTrue(regionNode.IsBoxedValueType);
     }
 
     [TestMethod]
@@ -204,5 +204,232 @@ public class ParseNodeTests
         var regionNode = (MethodMetadataNode)node;
 
         Assert.AreEqual("[Microsoft.AspNetCore.Html.Abstractions]Microsoft.CodeAnalysis.EmbeddedAttribute..ctor()", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseSimpleEmbeddedPointerIndirectionNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Embedded pointer to __InterfaceDispatchMap_S_P_CoreLib_System_Collections_Generic_List_1_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext_");
+        Assert.IsNotNull(node);
+        var regionNode = (SimpleEmbeddedPointerIndirectionNode)node;
+
+        Assert.AreEqual("__InterfaceDispatchMap_S_P_CoreLib_System_Collections_Generic_List_1_Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext_", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseVirtualMethodUseNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "VirtualMethodUse [S.P.CoreLib]System.Func`1<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>.Invoke()");
+        Assert.IsNotNull(node);
+        var regionNode = (VirtualMethodUseNode)node;
+
+        Assert.AreEqual("[S.P.CoreLib]System.Func`1<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>.Invoke()", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseGCStaticEETypeNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GCStaticEEType_01");
+        Assert.IsNotNull(node);
+        var regionNode = (GCStaticEETypeNode)node;
+
+        Assert.AreEqual("01", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseTentativeInstanceMethodNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Tentative instance method: Microsoft_AspNetCore_Html_Abstractions_Microsoft_CodeAnalysis_EmbeddedAttribute___ctor");
+        Assert.IsNotNull(node);
+        var regionNode = (TentativeInstanceMethodNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Html_Abstractions_Microsoft_CodeAnalysis_EmbeddedAttribute___ctor", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutTemplateMethodLayoutVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutTemplateTypeLayoutVertexNode_S_P_CoreLib_System_Threading_Tasks_Task_1<TResult_System___Canon>");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutTemplateMethodLayoutVertexNode)node;
+
+        Assert.AreEqual("S_P_CoreLib_System_Threading_Tasks_Task_1<TResult_System___Canon>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutTypeSignatureVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutTypeSignatureVertexNode: [S.P.CoreLib]System.ICloneable");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutTypeSignatureVertexNode)node;
+
+        Assert.AreEqual("[S.P.CoreLib]System.ICloneable", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutPlacedSignatureVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutPlacedSignatureVertexNode");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutPlacedSignatureVertexNode)node;
+
+        Assert.AreEqual("NativeLayoutPlacedSignatureVertexNode", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutMethodNameAndSignatureVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutMethodNameAndSignatureVertexNodeMicrosoft_AspNetCore_Razor_Microsoft_AspNetCore_Razor_TagHelpers_TagHelperComponent__get_Order");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutMethodNameAndSignatureVertexNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Microsoft_AspNetCore_Razor_TagHelpers_TagHelperComponent__get_Order", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutMethodSignatureVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutMethodSignatureVertexNode System.Int32,System.Private.CoreLib()");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutMethodSignatureVertexNode)node;
+
+        Assert.AreEqual("System.Int32,System.Private.CoreLib()", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseFrozenObjectNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__FrozenObj_Microsoft_AspNetCore_Razor_Microsoft_AspNetCore_Razor_TagHelpers_TagHelperOutput___c1");
+        Assert.IsNotNull(node);
+        var regionNode = (FrozenObjectNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Razor_Microsoft_AspNetCore_Razor_TagHelpers_TagHelperOutput___c1", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseFatFunctionPointerNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__fatpointer_S_P_CoreLib_System_Collections_Generic_List_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>___cctor");
+        Assert.IsNotNull(node);
+        var regionNode = (FatFunctionPointerNode)node;
+
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_List_1<Microsoft_AspNetCore_Razor_Runtime_Microsoft_AspNetCore_Razor_Runtime_TagHelpers_TagHelperExecutionContext>___cctor", regionNode.Name);
+        Assert.IsFalse(regionNode.IsUnboxingStub);
+    }
+
+    [TestMethod]
+    public void ParseFatFunctionPointerNodeUnboxingStub()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__fatunboxpointer_System_Linq_System_Collections_Generic_LargeArrayBuilder_1<String>__AllocateBuffer");
+        Assert.IsNotNull(node);
+        var regionNode = (FatFunctionPointerNode)node;
+
+        Assert.AreEqual("System_Linq_System_Collections_Generic_LargeArrayBuilder_1<String>__AllocateBuffer", regionNode.Name);
+        Assert.IsTrue(regionNode.IsUnboxingStub);
+    }
+
+    [TestMethod]
+    public void ParseShadowConcreteMethodNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "[S.P.CoreLib]System.Collections.Generic.Dictionary`2+ValueCollection<System.Linq.Expressions.Expression,bool>.System.Collections.IEnumerable.GetEnumerator() backed by S_P_CoreLib_System_Collections_Generic_Dictionary_2_ValueCollection<System___Canon__Bool>__System_Collections_IEnumerable_GetEnumerator");
+        Assert.IsNotNull(node);
+        var regionNode = (ShadowConcreteMethodNode)node;
+
+        Assert.AreEqual("[S.P.CoreLib]System.Collections.Generic.Dictionary`2+ValueCollection<System.Linq.Expressions.Expression,bool>.System.Collections.IEnumerable.GetEnumerator()", regionNode.Name);
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_Dictionary_2_ValueCollection<System___Canon__Bool>__System_Collections_IEnumerable_GetEnumerator", regionNode.CanonicalMethodName);
+    }
+
+    [TestMethod]
+    public void ParseInterfaceDispatchCellNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__InterfaceDispatchCell_S_P_CoreLib_System_Collections_Generic_ICollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>__get_Count___GenericDict_S_P_CoreLib_System_Collections_ObjectModel_ReadOnlyCollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>");
+        Assert.IsNotNull(node);
+        var regionNode = (InterfaceDispatchCellNode)node;
+
+        //Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_ICollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>__get_Count___GenericDict_S_P_CoreLib_System_Collections_ObjectModel_ReadOnlyCollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>", regionNode.Name);
+        Assert.AreEqual("S_P_CoreLib_System_Collections_Generic_ICollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>__get_Count", regionNode.Name);
+        Assert.AreEqual("S_P_CoreLib_System_Collections_ObjectModel_ReadOnlyCollection_1<Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_Metadata_Conventions_Internal_ConventionDispatcher_ConventionNode>", regionNode.CallSiteIdentifier);
+    }
+
+    [TestMethod]
+    public void ParseRuntimeMethodHandleNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__RuntimeMethodHandle_System_Linq_System_Linq_Enumerable_Iterator_1<S_P_CoreLib_System_Type>__Select<S_P_CoreLib_System_Reflection_TypeInfo>");
+        Assert.IsNotNull(node);
+        var regionNode = (RuntimeMethodHandleNode)node;
+
+        Assert.AreEqual("System_Linq_System_Linq_Enumerable_Iterator_1<S_P_CoreLib_System_Type>__Select<S_P_CoreLib_System_Reflection_TypeInfo>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseTypeGVMEntriesNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__TypeGVMEntriesNode_Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_PageBase");
+        Assert.IsNotNull(node);
+        var regionNode = (TypeGVMEntriesNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_PageBase", regionNode.Name);
+    }
+
+    [TestMethod]
+    [Ignore("this is method, but cannot guess what's node it is")]
+    public void ParseUnboxingThunkNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "unbox_Microsoft_AspNetCore_Mvc_ViewFeatures_Microsoft_AspNetCore_Components_ComponentParameter__set_Assembly");
+        Assert.IsNotNull(node);
+        var regionNode = (RuntimeMethodHandleNode)node;
+
+        Assert.AreEqual("System_Linq_System_Linq_Enumerable_Iterator_1<S_P_CoreLib_System_Type>__Select<S_P_CoreLib_System_Reflection_TypeInfo>", regionNode.Name);
+    }
+
+    [TestMethod]
+    [Ignore("this is mangled type and method method separated by '_', but cannot guess what's node it is")]
+    public void ParseTypeAndMethodManglingNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "<Boxed>S_P_CoreLib_System_Runtime_CompilerServices_ValueTaskAwaiter_1<System___Canon>__<unbox>S_P_CoreLib_System_Runtime_CompilerServices_ValueTaskAwaiter_1__UnsafeOnCompleted");
+        Assert.IsNotNull(node);
+        var regionNode = (RuntimeMethodHandleNode)node;
+
+        Assert.AreEqual("System_Linq_System_Linq_Enumerable_Iterator_1<S_P_CoreLib_System_Type>__Select<S_P_CoreLib_System_Reflection_TypeInfo>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseGCStaticsNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "?__GCSTATICS@Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_Infrastructure_DefaultPageHandlerMethodSelector___c@@");
+        Assert.IsNotNull(node);
+        var regionNode = (GCStaticsNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_Infrastructure_DefaultPageHandlerMethodSelector___c", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseGCStaticsPreInitDataNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "?__GCSTATICS@Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_Infrastructure_DefaultPageHandlerMethodSelector___c@@__PreInitData");
+        Assert.IsNotNull(node);
+        var regionNode = (GCStaticsPreInitDataNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_Infrastructure_DefaultPageHandlerMethodSelector___c", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNonGCStaticsNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "?__NONGCSTATICS@Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_ApplicationModels_PageRouteModelFactory@@");
+        Assert.IsNotNull(node);
+        var regionNode = (NonGCStaticsNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_ApplicationModels_PageRouteModelFactory", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseNativeLayoutTemplateMethodSignatureVertexNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "NativeLayoutTemplateMethodSignatureVertexNode_Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_PageModel__TryUpdateModelAsync_5<System___Canon>");
+        Assert.IsNotNull(node);
+        var regionNode = (NativeLayoutTemplateMethodSignatureVertexNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_PageModel__TryUpdateModelAsync_5<System___Canon>", regionNode.Name);
     }
 }

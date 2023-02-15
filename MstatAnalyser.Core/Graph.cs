@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Diagnostics;
+using System.Xml;
 
 namespace MstatAnalyser.Core;
 
@@ -172,7 +173,8 @@ public class DGMLGraphProcessing
         const string SealedVTableStartMarker = "__SealedVTable_";
         if (label.StartsWith(SealedVTableStartMarker))
         {
-            var (mangledMethodTable, _) = ParseMangledName(label.Substring(SealedVTableStartMarker.Length));
+            var (mangledMethodTable, _, unboxingThunk) = ParseMangledName(label.Substring(SealedVTableStartMarker.Length));
+            Debug.Assert(unboxingThunk == false);
             return new SealedVTableNode(id, mangledMethodTable);
         }
 
@@ -209,7 +211,8 @@ public class DGMLGraphProcessing
         const string EETypeOptionalFieldsStartMarker = "__optionalfields_";
         if (label.StartsWith(EETypeOptionalFieldsStartMarker))
         {
-            var (mangledMethodTable, isBoxed) = ParseMangledName(label.Substring(EETypeOptionalFieldsStartMarker.Length));
+            var (mangledMethodTable, isBoxed, unboxingThunk) = ParseMangledName(label.Substring(EETypeOptionalFieldsStartMarker.Length));
+            Debug.Assert(unboxingThunk == false);
             return new EETypeOptionalFieldsNode(id, mangledMethodTable);
         }
 
@@ -217,6 +220,232 @@ public class DGMLGraphProcessing
         if (label.StartsWith(MethodMetadataStartMarker))
         {
             return new MethodMetadataNode(id, label.Substring(MethodMetadataStartMarker.Length));
+        }
+
+        const string SimpleEmbeddedPointerIndirectionStartMarker = "Embedded pointer to ";
+        if (label.StartsWith(SimpleEmbeddedPointerIndirectionStartMarker))
+        {
+            return new SimpleEmbeddedPointerIndirectionNode(id, label.Substring(SimpleEmbeddedPointerIndirectionStartMarker.Length));
+        }
+
+        const string VirtualMethodUseStartMarker = "VirtualMethodUse ";
+        if (label.StartsWith(VirtualMethodUseStartMarker))
+        {
+            return new VirtualMethodUseNode(id, label.Substring(VirtualMethodUseStartMarker.Length));
+        }
+
+        const string GCStaticEETypeStartMarker = "__GCStaticEEType_";
+        if (label.StartsWith(GCStaticEETypeStartMarker))
+        {
+            return new GCStaticEETypeNode(id, label.Substring(GCStaticEETypeStartMarker.Length));
+        }
+
+        const string TentativeInstanceMethodStartMarker = "Tentative instance method: ";
+        if (label.StartsWith(TentativeInstanceMethodStartMarker))
+        {
+            return new TentativeInstanceMethodNode(id, label.Substring(TentativeInstanceMethodStartMarker.Length));
+        }
+
+        const string NativeLayoutTemplateMethodLayoutVertexStartMarker = "NativeLayoutTemplateTypeLayoutVertexNode_";
+        if (label.StartsWith(NativeLayoutTemplateMethodLayoutVertexStartMarker))
+        {
+            return new NativeLayoutTemplateMethodLayoutVertexNode(id, label.Substring(NativeLayoutTemplateMethodLayoutVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutTypeSignatureVertexStartMarker = "NativeLayoutTypeSignatureVertexNode: ";
+        if (label.StartsWith(NativeLayoutTypeSignatureVertexStartMarker))
+        {
+            return new NativeLayoutTypeSignatureVertexNode(id, label.Substring(NativeLayoutTypeSignatureVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutMethodNameAndSignatureVertexStartMarker = "NativeLayoutMethodNameAndSignatureVertexNode";
+        if (label.StartsWith(NativeLayoutMethodNameAndSignatureVertexStartMarker))
+        {
+            return new NativeLayoutMethodNameAndSignatureVertexNode(id, label.Substring(NativeLayoutMethodNameAndSignatureVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutMethodSignatureVertexStartMarker = "NativeLayoutMethodSignatureVertexNode ";
+        if (label.StartsWith(NativeLayoutMethodSignatureVertexStartMarker))
+        {
+            return new NativeLayoutMethodSignatureVertexNode(id, label.Substring(NativeLayoutMethodSignatureVertexStartMarker.Length));
+        }
+
+        const string FrozenObjectStartMarker = "__FrozenObj_";
+        if (label.StartsWith(FrozenObjectStartMarker))
+        {
+            return new FrozenObjectNode(id, label.Substring(FrozenObjectStartMarker.Length));
+        }
+
+        const string FatFunctionPointerStartMarker = "__fatpointer_";
+        if (label.StartsWith(FatFunctionPointerStartMarker))
+        {
+            return new FatFunctionPointerNode(id, label.Substring(FatFunctionPointerStartMarker.Length), false);
+        }
+
+        const string FatFunctionPointerUnboxingStubStartMarker = "__fatunboxpointer_";
+        if (label.StartsWith(FatFunctionPointerUnboxingStubStartMarker))
+        {
+            return new FatFunctionPointerNode(id, label.Substring(FatFunctionPointerUnboxingStubStartMarker.Length), true);
+        }
+
+        const string RuntimeMethodHandleStartMarker = "__RuntimeMethodHandle_";
+        if (label.StartsWith(RuntimeMethodHandleStartMarker))
+        {
+            return new RuntimeMethodHandleNode(id, label.Substring(RuntimeMethodHandleStartMarker.Length));
+        }
+
+        const string TypeGVMEntriesStartMarker = "__TypeGVMEntriesNode_";
+        if (label.StartsWith(TypeGVMEntriesStartMarker))
+        {
+            return new TypeGVMEntriesNode(id, label[TypeGVMEntriesStartMarker.Length..]);
+        }
+
+        const string GCStaticsStartMarker = "?__GCSTATICS@";
+        if (label.StartsWith(GCStaticsStartMarker))
+        {
+            var leftover = label.Substring(GCStaticsStartMarker.Length);
+            const string PreinitEndMarker = "@@__PreInitData";
+            if (leftover.EndsWith(PreinitEndMarker))
+                return new GCStaticsPreInitDataNode(id, leftover[..^PreinitEndMarker.Length]);
+            return new GCStaticsNode(id, leftover.TrimEnd('@'));
+        }
+
+        const string NonGCStaticsStartMarker = "?__NONGCSTATICS@";
+        if (label.StartsWith(NonGCStaticsStartMarker))
+        {
+            return new NonGCStaticsNode(id, label.Substring(NonGCStaticsStartMarker.Length).TrimEnd('@'));
+        }
+
+        const string NativeLayoutTemplateMethodSignatureVertexStartMarker = "NativeLayoutTemplateMethodSignatureVertexNode_";
+        if (label.StartsWith(NativeLayoutTemplateMethodSignatureVertexStartMarker))
+        {
+            return new NativeLayoutTemplateMethodSignatureVertexNode(id, label.Substring(NativeLayoutTemplateMethodSignatureVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutMethodLdTokenVertexStartMarker = "NativeLayoutMethodLdTokenVertexNode_";
+        if (label.StartsWith(NativeLayoutMethodLdTokenVertexStartMarker))
+        {
+            return new NativeLayoutMethodLdTokenVertexNode(id, label.Substring(NativeLayoutMethodLdTokenVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutFieldLdTokenVertexStartMarker = "NativeLayoutFieldLdTokenVertexNode_";
+        if (label.StartsWith(NativeLayoutFieldLdTokenVertexStartMarker))
+        {
+            return new NativeLayoutFieldLdTokenVertexNode(id, label.Substring(NativeLayoutFieldLdTokenVertexStartMarker.Length));
+        }
+
+        const string NativeLayoutExternalReferenceVertexStartMarker = "NativeLayoutISymbolNodeReferenceVertexNode ";
+        if (label.StartsWith(NativeLayoutExternalReferenceVertexStartMarker))
+        {
+            return new NativeLayoutExternalReferenceVertexNode(id, label.Substring(NativeLayoutExternalReferenceVertexStartMarker.Length));
+        }
+
+        if (label == "NativeLayoutPlacedVertexSequenceVertexNode")
+        {
+            return new NativeLayoutPlacedVertexSequenceOfUIntVertexNode(id);
+        }
+
+        const string NativeLayoutDictionarySignatureStartMarker = "Dictionary layout signature for ";
+        if (label.StartsWith(NativeLayoutDictionarySignatureStartMarker))
+        {
+            return new NativeLayoutDictionarySignatureNode(id, label.Substring(NativeLayoutDictionarySignatureStartMarker.Length));
+        }
+
+        const string NativeLayoutTypeHandleGenericDictionarySlotStartMarker = "NativeLayoutTypeHandleGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutTypeHandleGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutTypeHandleGenericDictionarySlotNode(id, label.Substring(NativeLayoutTypeHandleGenericDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutUnwrapNullableGenericDictionarySlotStartMarker = "NativeLayoutUnwrapNullableGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutUnwrapNullableGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutUnwrapNullableGenericDictionarySlotNode(id, label.Substring(NativeLayoutUnwrapNullableGenericDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutAllocateObjectGenericDictionarySlotStartMarker = "NativeLayoutAllocateObjectGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutAllocateObjectGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutAllocateObjectGenericDictionarySlotNode(id, label.Substring(NativeLayoutAllocateObjectGenericDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutThreadStaticBaseIndexDictionarySlotStartMarker = "NativeLayoutThreadStaticBaseIndexDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutThreadStaticBaseIndexDictionarySlotStartMarker))
+        {
+            return new NativeLayoutThreadStaticBaseIndexDictionarySlotNode(id, label.Substring(NativeLayoutThreadStaticBaseIndexDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutDefaultConstructorGenericDictionarySlotStartMarker = "NativeLayoutDefaultConstructorGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutDefaultConstructorGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutDefaultConstructorGenericDictionarySlotNode(id, label.Substring(NativeLayoutDefaultConstructorGenericDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutGcStaticsGenericDictionarySlotStartMarker = "NativeLayoutGcStaticsGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutGcStaticsGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutGcStaticsGenericDictionarySlotNode(id, label.Substring(NativeLayoutGcStaticsGenericDictionarySlotStartMarker.Length));
+        }
+
+        const string NativeLayoutNonGcStaticsGenericDictionarySlotStartMarker = "NativeLayoutNonGcStaticsGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutNonGcStaticsGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutNonGcStaticsGenericDictionarySlotNode(id, label[NativeLayoutNonGcStaticsGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string NativeLayoutInterfaceDispatchGenericDictionarySlotStartMarker = "NativeLayoutInterfaceDispatchGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutInterfaceDispatchGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutInterfaceDispatchGenericDictionarySlotNode(id, label[NativeLayoutInterfaceDispatchGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string NativeLayoutMethodDictionaryGenericDictionarySlotStartMarker = "NativeLayoutMethodDictionaryGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutMethodDictionaryGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutMethodDictionaryGenericDictionarySlotNode(id, label[NativeLayoutMethodDictionaryGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string WrappedMethodDictionaryVertexStartMarker = "WrappedMethodEntryVertexNodeForDictionarySlot_";
+        if (label.StartsWith(WrappedMethodDictionaryVertexStartMarker))
+        {
+            return new WrappedMethodDictionaryVertexNode(id, label[WrappedMethodDictionaryVertexStartMarker.Length..]);
+        }
+
+        const string NativeLayoutFieldLdTokenGenericDictionarySlotStartMarker = "NativeLayoutFieldLdTokenGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutFieldLdTokenGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutFieldLdTokenGenericDictionarySlotNode(id, label[NativeLayoutFieldLdTokenGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string NativeLayoutMethodLdTokenGenericDictionarySlotStartMarker = "NativeLayoutMethodLdTokenGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutMethodLdTokenGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutMethodLdTokenGenericDictionarySlotNode(id, label[NativeLayoutMethodLdTokenGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string NativeLayoutConstrainedMethodDictionarySlotStartMarker = "NativeLayoutConstrainedMethodDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutConstrainedMethodDictionarySlotStartMarker))
+        {
+            Debug.Assert(false);
+            return new NativeLayoutConstrainedMethodDictionarySlotNode(id, label[NativeLayoutConstrainedMethodDictionarySlotStartMarker.Length..]);
+        }
+
+        const string NativeLayoutMethodEntrypointGenericDictionarySlotStartMarker = "NativeLayoutMethodEntrypointGenericDictionarySlotNode_";
+        if (label.StartsWith(NativeLayoutMethodEntrypointGenericDictionarySlotStartMarker))
+        {
+            return new NativeLayoutMethodEntrypointGenericDictionarySlotNode(id, label[NativeLayoutMethodEntrypointGenericDictionarySlotStartMarker.Length..]);
+        }
+
+        const string WrappedMethodEntryVertexStartMarker = "WrappedMethodEntryVertexNodeForDictionarySlot_";
+        if (label.StartsWith(WrappedMethodEntryVertexStartMarker))
+        {
+            Debug.Assert(false);
+            return new WrappedMethodEntryVertexNode(id, label[WrappedMethodEntryVertexStartMarker.Length..]);
+        }
+
+        if (label == "NativeLayoutNotSupportedDictionarySlotNode")
+        {
+            return new NativeLayoutNotSupportedDictionarySlotNode(id);
         }
 
         const string GenericCompositionStartMarker = "__GenericInstance";
@@ -232,6 +461,13 @@ public class DGMLGraphProcessing
             }
         }
 
+        const string ShadowConcreteMethodMarker = " backed by ";
+        if (label.Contains(ShadowConcreteMethodMarker))
+        {
+            var parts = label.Split(ShadowConcreteMethodMarker);
+            return new ShadowConcreteMethodNode(id, parts[0], parts[1]);
+        }
+
         const string CustomAttributeMetadataStartMarker = "Reflectable custom attribute ";
         if (label.StartsWith(CustomAttributeMetadataStartMarker))
         {
@@ -239,9 +475,18 @@ public class DGMLGraphProcessing
             return new CustomAttributeMetadataNode(id, parts[0], parts[1]);
         }
 
+        const string CInterfaceDispatchCellStartMarker = "__InterfaceDispatchCell_";
+        if (label.StartsWith(CInterfaceDispatchCellStartMarker))
+        {
+            var parts = label.Substring(CInterfaceDispatchCellStartMarker.Length).Split("___GenericDict_");
+            Debug.Assert(parts.Length <= 2);
+            return new InterfaceDispatchCellNode(id, parts[0], parts.ElementAtOrDefault(1));
+        }
+
         if (label.StartsWith("??_7") && label.EndsWith("@@6B@"))
         {
-            var (mangledMethodTable, isBoxed) = ParseMangledName(label);
+            var (mangledMethodTable, isBoxed, unboxingThunk) = ParseMangledName(label);
+            Debug.Assert(unboxingThunk == false);
             return new MethodTableNode(id, mangledMethodTable, isBoxed);
         }
 
@@ -251,17 +496,26 @@ public class DGMLGraphProcessing
             return new ConstructedEETypeNode(id, label.Substring(0, label.Length - ConstructedEETypeEndMarker.Length));
         }
 
+        if (label == "NativeLayoutPlacedSignatureVertexNode")
+        {
+            return new NativeLayoutPlacedSignatureVertexNode(id);
+        }
+
         return new Node(id, label);
     }
 
-    private static (string UnmangledName, bool IsBoxed) ParseMangledName(string label)
+    private static (string UnmangledName, bool IsBoxedValueType, bool UnboxingThunk) ParseMangledName(string label)
     {
         var mangledMethodTable = label.Substring(4, label.Length - 9);
         const string BoxedStartMarker = "Boxed_";
         if (mangledMethodTable.StartsWith(BoxedStartMarker))
-            return (mangledMethodTable.Substring(BoxedStartMarker.Length), true);
+            return (mangledMethodTable.Substring(BoxedStartMarker.Length), true, false);
 
-        return (mangledMethodTable, false);
+        const string UnboxingStartMarker = "unbox_";
+        if (mangledMethodTable.StartsWith(UnboxingStartMarker))
+            return (mangledMethodTable.Substring(UnboxingStartMarker.Length), false, true);
+
+        return (mangledMethodTable, false, false);
     }
 }
 
@@ -310,10 +564,10 @@ public class MethodTableNode : Node
     public MethodTableNode(int id, string methodFullName, bool isBoxed)
         : base(id, methodFullName)
     {
-        IsBoxed = isBoxed;
+        IsBoxedValueType = isBoxed;
     }
 
-    public bool IsBoxed { get; }
+    public bool IsBoxedValueType { get; }
 }
 
 public class ReflectedTypeNode : Node
@@ -416,6 +670,335 @@ public class MethodMetadataNode : Node
 {
     public MethodMetadataNode(int id, string fieldName)
         : base(id, fieldName)
+    {
+    }
+}
+
+public class SimpleEmbeddedPointerIndirectionNode : Node
+{
+    public SimpleEmbeddedPointerIndirectionNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class VirtualMethodUseNode : Node
+{
+    public VirtualMethodUseNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class GCStaticEETypeNode : Node
+{
+    public GCStaticEETypeNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class TentativeInstanceMethodNode : Node
+{
+    public TentativeInstanceMethodNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutTemplateMethodLayoutVertexNode : Node
+{
+    public NativeLayoutTemplateMethodLayoutVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutTypeSignatureVertexNode : Node
+{
+    public NativeLayoutTypeSignatureVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutPlacedSignatureVertexNode : Node
+{
+    public NativeLayoutPlacedSignatureVertexNode(int id)
+        : base(id, "NativeLayoutPlacedSignatureVertexNode")
+    {
+    }
+}
+
+public class NativeLayoutMethodNameAndSignatureVertexNode : Node
+{
+    public NativeLayoutMethodNameAndSignatureVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutMethodSignatureVertexNode : Node
+{
+    public NativeLayoutMethodSignatureVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class FrozenObjectNode : Node
+{
+    public FrozenObjectNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class FatFunctionPointerNode : Node
+{
+    public FatFunctionPointerNode(int id, string fieldName, bool isUnboxingStub)
+        : base(id, fieldName)
+    {
+        IsUnboxingStub = isUnboxingStub;
+    }
+
+    public bool IsUnboxingStub { get; }
+}
+
+public class ShadowConcreteMethodNode : Node
+{
+    public ShadowConcreteMethodNode(int id, string fieldName, string canonicalMethodName)
+        : base(id, fieldName)
+    {
+        CanonicalMethodName = canonicalMethodName;
+    }
+
+    public string CanonicalMethodName { get; }
+}
+
+public class InterfaceDispatchCellNode : Node
+{
+    public InterfaceDispatchCellNode(int id, string fieldName, string? callSiteIdentifier)
+        : base(id, fieldName)
+    {
+        CallSiteIdentifier = callSiteIdentifier;
+    }
+
+    public string? CallSiteIdentifier { get; }
+}
+
+public class RuntimeMethodHandleNode : Node
+{
+    public RuntimeMethodHandleNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class TypeGVMEntriesNode : Node
+{
+    public TypeGVMEntriesNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class GCStaticsNode : Node
+{
+    public GCStaticsNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class GCStaticsPreInitDataNode : Node
+{
+    public GCStaticsPreInitDataNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NonGCStaticsNode : Node
+{
+    public NonGCStaticsNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutTemplateMethodSignatureVertexNode : Node
+{
+    public NativeLayoutTemplateMethodSignatureVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutMethodLdTokenVertexNode : Node
+{
+    public NativeLayoutMethodLdTokenVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutFieldLdTokenVertexNode : Node
+{
+    public NativeLayoutFieldLdTokenVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutExternalReferenceVertexNode : Node
+{
+    public NativeLayoutExternalReferenceVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutPlacedVertexSequenceOfUIntVertexNode : Node
+{
+    public NativeLayoutPlacedVertexSequenceOfUIntVertexNode(int id)
+        : base(id, "NativeLayoutPlacedVertexSequenceOfUIntVertexNode")
+    {
+    }
+}
+
+public class NativeLayoutDictionarySignatureNode : Node
+{
+    public NativeLayoutDictionarySignatureNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutTypeHandleGenericDictionarySlotNode : Node
+{
+    public NativeLayoutTypeHandleGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutUnwrapNullableGenericDictionarySlotNode : Node
+{
+    public NativeLayoutUnwrapNullableGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutAllocateObjectGenericDictionarySlotNode : Node
+{
+    public NativeLayoutAllocateObjectGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutThreadStaticBaseIndexDictionarySlotNode : Node
+{
+    public NativeLayoutThreadStaticBaseIndexDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutDefaultConstructorGenericDictionarySlotNode : Node
+{
+    public NativeLayoutDefaultConstructorGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutGcStaticsGenericDictionarySlotNode : Node
+{
+    public NativeLayoutGcStaticsGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutNonGcStaticsGenericDictionarySlotNode : Node
+{
+    public NativeLayoutNonGcStaticsGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutInterfaceDispatchGenericDictionarySlotNode : Node
+{
+    public NativeLayoutInterfaceDispatchGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutMethodDictionaryGenericDictionarySlotNode : Node
+{
+    public NativeLayoutMethodDictionaryGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class WrappedMethodDictionaryVertexNode : Node
+{
+    public WrappedMethodDictionaryVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutFieldLdTokenGenericDictionarySlotNode : Node
+{
+    public NativeLayoutFieldLdTokenGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutMethodLdTokenGenericDictionarySlotNode : Node
+{
+    public NativeLayoutMethodLdTokenGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutConstrainedMethodDictionarySlotNode : Node
+{
+    public NativeLayoutConstrainedMethodDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutMethodEntrypointGenericDictionarySlotNode : Node
+{
+    public NativeLayoutMethodEntrypointGenericDictionarySlotNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class WrappedMethodEntryVertexNode : Node
+{
+    public WrappedMethodEntryVertexNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class NativeLayoutNotSupportedDictionarySlotNode : Node
+{
+    public NativeLayoutNotSupportedDictionarySlotNode(int id)
+        : base(id, "NativeLayoutNotSupportedDictionarySlotNode")
     {
     }
 }
