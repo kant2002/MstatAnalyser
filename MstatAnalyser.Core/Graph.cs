@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Reflection.Emit;
 using System.Xml;
 
 namespace MstatAnalyser.Core;
@@ -37,15 +39,16 @@ public class Graph
 
     public bool AddEdge(int source, int target, string reason)
     {
-        if (Nodes.TryGetValue(source, out var a) && Nodes.TryGetValue(target, out var b))
+        if (Nodes.TryGetValue(source, out var sourceNode) && Nodes.TryGetValue(target, out var targetNode))
         {
-            AddReason(a.Targets, b, reason);
-            AddReason(b.Sources, a, reason);
+            AddReason(sourceNode.Targets, targetNode, reason);
+            //AddReason(targetNode.Sources, sourceNode, reason);
         }
         else
         {
             return false;
         }
+
         return true;
     }
 
@@ -69,10 +72,9 @@ public class Graph
         AddReason(conditionalNode.Sources, reason2Node, "Reason2Conditional - " + reason);
     }
 
-    public void AddNode(int index, string name)
+    public void AddNode(int index, Node node)
     {
-        Node n = new Node(index, name);
-        this.Nodes.Add(index, n);
+        this.Nodes.Add(index, node);
     }
 
     public void AddReason(Dictionary<Node, List<string>> dict, Node node, string reason)
@@ -111,7 +113,8 @@ public class DGMLGraphProcessing
                 {
                     case "Node":
                         int id = int.Parse(reader.GetAttribute("Id"));
-                        g.AddNode(id, reader.GetAttribute("Label"));
+                        var node = DGMLGraphProcessing.ParseNode(id, reader.GetAttribute("Label"));
+                        g.AddNode(id, node);
                         break;
                     case "Link":
                         int source = int.Parse(reader.GetAttribute("Source"));
@@ -446,6 +449,30 @@ public class DGMLGraphProcessing
         if (label == "NativeLayoutNotSupportedDictionarySlotNode")
         {
             return new NativeLayoutNotSupportedDictionarySlotNode(id);
+        }
+
+        const string GVMDependenciesStartMarker = "__GVMDependenciesNode_";
+        if (label.StartsWith(GVMDependenciesStartMarker))
+        {
+            return new GVMDependenciesNode(id, label[GVMDependenciesStartMarker.Length..]);
+        }
+
+        const string VariantInterfaceMethodUseStartMarker = "VariantInterfaceMethodUse ";
+        if (label.StartsWith(VariantInterfaceMethodUseStartMarker))
+        {
+            return new VariantInterfaceMethodUseNode(id, label[VariantInterfaceMethodUseStartMarker.Length..]);
+        }
+
+        const string DataflowAnalyzedMethodStartMarker = "Dataflow analysis for ";
+        if (label.StartsWith(DataflowAnalyzedMethodStartMarker))
+        {
+            return new DataflowAnalyzedMethodNode(id, label[DataflowAnalyzedMethodStartMarker.Length..]);
+        }
+
+        const string ReadyToRunGenericHelperNodeStartMarker = "__GenericLookupFromDict_";
+        if (label.StartsWith(ReadyToRunGenericHelperNodeStartMarker))
+        {
+            return new ReadyToRunGenericHelperNode(id, label[ReadyToRunGenericHelperNodeStartMarker.Length..]);
         }
 
         const string GenericCompositionStartMarker = "__GenericInstance";
@@ -999,6 +1026,38 @@ public class NativeLayoutNotSupportedDictionarySlotNode : Node
 {
     public NativeLayoutNotSupportedDictionarySlotNode(int id)
         : base(id, "NativeLayoutNotSupportedDictionarySlotNode")
+    {
+    }
+}
+
+public class GVMDependenciesNode : Node
+{
+    public GVMDependenciesNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class VariantInterfaceMethodUseNode : Node
+{
+    public VariantInterfaceMethodUseNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class DataflowAnalyzedMethodNode : Node
+{
+    public DataflowAnalyzedMethodNode(int id, string fieldName)
+        : base(id, fieldName)
+    {
+    }
+}
+
+public class ReadyToRunGenericHelperNode : Node
+{
+    public ReadyToRunGenericHelperNode(int id, string fieldName)
+        : base(id, fieldName)
     {
     }
 }

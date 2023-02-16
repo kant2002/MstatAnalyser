@@ -432,4 +432,44 @@ public class ParseNodeTests
 
         Assert.AreEqual("Microsoft_AspNetCore_Mvc_RazorPages_Microsoft_AspNetCore_Mvc_RazorPages_PageModel__TryUpdateModelAsync_5<System___Canon>", regionNode.Name);
     }
+
+    [TestMethod]
+    public void ParseGVMDependenciesNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GVMDependenciesNode_System_Linq_System_Linq_Enumerable_SelectListPartitionIterator_2<System___Canon__System___Canon>__Select<System___Canon>");
+        Assert.IsNotNull(node);
+        var regionNode = (GVMDependenciesNode)node;
+
+        Assert.AreEqual("System_Linq_System_Linq_Enumerable_SelectListPartitionIterator_2<System___Canon__System___Canon>__Select<System___Canon>", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseVariantInterfaceMethodUseNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "VariantInterfaceMethodUse [S.P.CoreLib]System.Collections.Generic.IComparer`1.Compare(!0,!0)");
+        Assert.IsNotNull(node);
+        var regionNode = (VariantInterfaceMethodUseNode)node;
+
+        Assert.AreEqual("[S.P.CoreLib]System.Collections.Generic.IComparer`1.Compare(!0,!0)", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseDataflowAnalyzedMethodNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "Dataflow analysis for Microsoft_AspNetCore_Mvc_ViewFeatures_Microsoft_AspNetCore_Mvc_ViewFeatures_HtmlHelper__ObjectToDictionary");
+        Assert.IsNotNull(node);
+        var regionNode = (DataflowAnalyzedMethodNode)node;
+
+        Assert.AreEqual("Microsoft_AspNetCore_Mvc_ViewFeatures_Microsoft_AspNetCore_Mvc_ViewFeatures_HtmlHelper__ObjectToDictionary", regionNode.Name);
+    }
+
+    [TestMethod]
+    public void ParseReadyToRunGenericHelperNode()
+    {
+        var node = DGMLGraphProcessing.ParseNode(332, "__GenericLookupFromDict_Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_EF__CompileAsyncQuery_40<System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon>_TypeHandle_S_P_CoreLib_System_Func_12<TContext_System___Canon__TParam1_System___Canon__TParam2_System___Canon__TParam3_System___Canon__TParam4_System___Canon__TParam5_System___Canon__TParam6_System___Canon__TParam7_System___Canon__TParam8_System___Canon__TParam9_System___Canon__TParam10_System___Canon__S_P_CoreLib_System_Collections_Generic_IAsyncEnumerable_1<TResult_System___Canon>>");
+        Assert.IsNotNull(node);
+        var regionNode = (ReadyToRunGenericHelperNode)node;
+
+        Assert.AreEqual("Microsoft_EntityFrameworkCore_Microsoft_EntityFrameworkCore_EF__CompileAsyncQuery_40<System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon__System___Canon>_TypeHandle_S_P_CoreLib_System_Func_12<TContext_System___Canon__TParam1_System___Canon__TParam2_System___Canon__TParam3_System___Canon__TParam4_System___Canon__TParam5_System___Canon__TParam6_System___Canon__TParam7_System___Canon__TParam8_System___Canon__TParam9_System___Canon__TParam10_System___Canon__S_P_CoreLib_System_Collections_Generic_IAsyncEnumerable_1<TResult_System___Canon>>", regionNode.Name);
+    }
 }
