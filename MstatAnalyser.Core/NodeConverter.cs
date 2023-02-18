@@ -21,9 +21,72 @@ public class NodeConverter
             {
                 return new TypeNode(node.Index, resolvedType);
             }
+
+            if (node.Name[position] == '.' || node.Name[position] == '_')
+            {
+                var leftover = node.Name[position] == '.'
+                    ? node.Name.AsSpan()[(position + 1)..]
+                    : node.Name.AsSpan()[(position + 2)..];
+                if (TryMatchMember(resolvedType, leftover, out var memberPosition, out var memberReference))
+                {
+                    if (memberReference is FieldReference fieldReference && memberPosition == leftover.Length)
+                    {
+                        return new FieldNode(node.Index, fieldReference);
+                    }
+
+                    if (memberReference is MethodReference methodReference && memberPosition == leftover.Length)
+                    {
+                        return new MethodNode(node.Index, methodReference);
+                    }
+                }
+            }
         }
 
         return node;
+    }
+
+    private bool TryMatchMember(TypeReference type, ReadOnlySpan<char> content, out int position, [NotNullWhen(true)]out MemberReference? memberReference)
+    {
+        var candidates = new List<(int Position, MemberReference candidate)>();
+        if (type is TypeDefinition typeDefinition)
+        {
+            foreach (var field in typeDefinition.Fields)
+            {
+                if (content.StartsWith(field.Name))
+                {
+                    candidates.Add((field.Name.Length, field));
+                }
+            }
+
+            foreach (var field in typeDefinition.Methods)
+            {
+                if (content.StartsWith(field.Name) || content.StartsWith(field.Name.Replace('.', '_')))
+                {
+                    if (content.Length == field.Name.Length)
+                    {
+                        candidates.Add((field.Name.Length, field));
+                    }
+                    else
+                    {
+                        if (content[field.Name.Length] == '(')
+                        {
+                            candidates.Add((content.IndexOf(')') + 1, field));
+                        }
+                    }
+                }
+            }
+        }
+
+        candidates.Sort((x, y) => y.Position - x.Position);
+        if (candidates.Count > 0)
+        {
+            (position, memberReference) = candidates[0];
+            return true;
+        }
+
+        position = 0;
+        memberReference = null;
+        return false;
     }
 
     private IEnumerable<TypeReference> GetTypes()
@@ -185,4 +248,26 @@ public class TypeNode : Node
     }
 
     public TypeReference TypeReference { get; }
+}
+
+public class FieldNode : Node
+{
+    internal FieldNode(int id, FieldReference fieldReference)
+        : base(id, fieldReference.FullName)
+    {
+        FieldReference = fieldReference;
+    }
+
+    public FieldReference FieldReference { get; }
+}
+
+public class MethodNode : Node
+{
+    internal MethodNode(int id, MethodReference methodReference)
+        : base(id, methodReference.FullName)
+    {
+        MethodReference = methodReference;
+    }
+
+    public MethodReference MethodReference { get; }
 }

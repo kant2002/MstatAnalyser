@@ -72,6 +72,39 @@ public class NodeConversionTests
         Assert.AreEqual("Library.Pages.Shared.Pages_Shared__Layout/<>c/<<ExecuteAsync>b__17_2>d", regionNode.TypeReference.FullName);
     }
 
+    [TestMethod]
+    public void FieldNode()
+    {
+        var node = new Node(332, "[Microsoft.AspNetCore.Razor.Runtime]Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager+ExecutionContextPool._nextIndex");
+        NodeConverter converter = CreateTestConverter();
+        var regionNode = (FieldNode)converter.Convert(node);
+
+        Assert.AreEqual("_nextIndex", regionNode.FieldReference.Name);
+        Assert.AreEqual("Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager/ExecutionContextPool", regionNode.FieldReference.DeclaringType.FullName);
+    }
+
+    [TestMethod]
+    public void MethodNode()
+    {
+        var node = new Node(332, "[Microsoft.AspNetCore.Html.Abstractions]Microsoft.CodeAnalysis.EmbeddedAttribute..ctor()");
+        NodeConverter converter = CreateTestConverter();
+        var regionNode = (MethodNode)converter.Convert(node);
+
+        Assert.AreEqual(".ctor", regionNode.MethodReference.Name);
+        Assert.AreEqual("Microsoft.CodeAnalysis.EmbeddedAttribute", regionNode.MethodReference.DeclaringType.FullName);
+    }
+
+    [TestMethod]
+    public void MethodNode2()
+    {
+        var node = new Node(332, "Microsoft_AspNetCore_Html_Abstractions_Microsoft_CodeAnalysis_EmbeddedAttribute___ctor");
+        NodeConverter converter = CreateTestConverter();
+        var regionNode = (MethodNode)converter.Convert(node);
+
+        Assert.AreEqual(".ctor", regionNode.MethodReference.Name);
+        Assert.AreEqual("Microsoft.CodeAnalysis.EmbeddedAttribute", regionNode.MethodReference.DeclaringType.FullName);
+    }
+
     private static NodeConverter CreateTestConverter()
     {
         var microsoftAspnetCoreAssembly = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition("Microsoft.AspNetCore.Mvc.Core", new()), "Microsoft.AspNetCore.Mvc.Core", ModuleKind.Dll);
@@ -110,6 +143,17 @@ public class NodeConversionTests
         var microsoftAspNetCoreRazorRuntimeAssembly = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition("Microsoft.AspNetCore.Razor.Runtime", new()), "Microsoft.AspNetCore.Razor.Runtime", ModuleKind.Dll);
         var tagHelperExecutionContextType = new TypeDefinition("Microsoft.AspNetCore.Razor.Runtime.TagHelpers", "TagHelperExecutionContext", TypeAttributes.Class);
         microsoftAspNetCoreRazorRuntimeAssembly.Modules.First().Types.Add(tagHelperExecutionContextType);
+        var tagHelperScopeManagerType = new TypeDefinition("Microsoft.AspNetCore.Razor.Runtime.TagHelpers", "TagHelperScopeManager", TypeAttributes.Class);
+        var executionContextPoolType = new TypeDefinition("", "ExecutionContextPool", TypeAttributes.Class);
+        executionContextPoolType.Fields.Add(new FieldDefinition("_nextIndex", FieldAttributes.Public, canonType));
+        tagHelperScopeManagerType.NestedTypes.Add(executionContextPoolType);
+        microsoftAspNetCoreRazorRuntimeAssembly.Modules.First().Types.Add(tagHelperScopeManagerType);
+
+        var microsoftAspnetHtmlAbstractionsAssembly = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition("Microsoft.AspNetCore.Html.Abstractions", new()), "Microsoft.AspNetCore.Html.Abstractions", ModuleKind.Dll);
+        var embeddedAttributeType = new TypeDefinition("Microsoft.CodeAnalysis", "EmbeddedAttribute", TypeAttributes.Class);
+        embeddedAttributeType.Methods.Add(new MethodDefinition(".ctor", MethodAttributes.Public, embeddedAttributeType));
+        embeddedAttributeType.Methods.Add(new MethodDefinition("..ctor", MethodAttributes.Public | MethodAttributes.Static, embeddedAttributeType));
+        microsoftAspnetHtmlAbstractionsAssembly.Modules.First().Types.Add(embeddedAttributeType);
 
         var converter = new NodeConverter(new[]
         {
@@ -122,6 +166,8 @@ public class NodeConversionTests
             ireadonnlyListType,
             canonType,
             tagHelperExecutionContextType,
+            tagHelperScopeManagerType,
+            embeddedAttributeType,
         });
         return converter;
     }
