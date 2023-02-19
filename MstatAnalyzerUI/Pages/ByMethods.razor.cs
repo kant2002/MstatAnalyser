@@ -46,7 +46,7 @@ public partial class ByMethods
         }
 
         TypeStats? type = null;
-        if (Type.EndsWith(">"))
+        if (Type.EndsWith(">") && Type != "<Module>")
         {
             type = typeStats.Single(x => x.Type.FullName[(x.Type.Namespace.Length + 1)..] == Type);
         }
