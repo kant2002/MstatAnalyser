@@ -11,6 +11,9 @@ internal class Program
         var fileOption = new Option<FileInfo?>(
             name: "--file",
             description: "The file to read and display on the console.");
+        var dgmlOption = new Option<FileInfo?>(
+            name: "--dgml",
+            description: "The DGML file to read and display on the console.");
         var assemblyFilterOption = new Option<string?>(
             name: "--assembly",
             description: "Filter types and methods to one which reference assembly with given name.");
@@ -23,10 +26,11 @@ internal class Program
 
         var rootCommand = new RootCommand("Sample app for System.CommandLine");
         rootCommand.AddOption(fileOption);
+        rootCommand.AddOption(dgmlOption);
         rootCommand.AddOption(assemblyFilterOption);
         rootCommand.AddOption(detailedOption);
         rootCommand.AddOption(excludeAssemblyFilterOption);
-        rootCommand.SetHandler((file, assemblyFilter, detailed, excludeAssemblyFilter) => 
+        rootCommand.SetHandler((file, dgml, assemblyFilter, detailed, excludeAssemblyFilter) => 
             {
                 if (file is null)
                 {
@@ -57,13 +61,13 @@ internal class Program
                     }
                 }
 
-                ReadFile(fileName, assemblyFilter, detailed, excludeAssemblyFilter);
+                ReadFile(fileName, dgml?.FullName, assemblyFilter, detailed, excludeAssemblyFilter);
             },
-            fileOption, assemblyFilterOption, detailedOption, excludeAssemblyFilterOption);
+            fileOption, dgmlOption, assemblyFilterOption, detailedOption, excludeAssemblyFilterOption);
         return await rootCommand.InvokeAsync(args);       
     }
 
-    private static void ReadFile(string file, string? assemblyFilter, bool detailed, string[] excludeAssemblyFilter)
+    private static void ReadFile(string file, string? dgmlFile, string? assemblyFilter, bool detailed, string[] excludeAssemblyFilter)
     {
         var asm = AssemblyDefinition.ReadAssembly(file);
         var applicationStats = new ApplicationStats(asm);
@@ -75,6 +79,13 @@ internal class Program
         IList<TypeStats> typeStats = applicationStats.TypeStats;
         typeStats = statsFilter.FilterTypes(typeStats);
         PrintTypesStatistics(typeStats, assemblyFilter, detailed);
+
+        if (dgmlFile is not null)
+        {
+            var processing = new DgmlGraphProcessing();
+            var graphResult = processing.ParseXml(dgmlFile, typeStats.Select(_ => _.Type).ToArray(), File.OpenRead(dgmlFile), out var g);
+            Console.WriteLine($"Graph parsing: {graphResult}. Nodes: {g.Nodes.Count}");
+        }
 
         Console.WriteLine();
         IList<MethodStats> methodStats = applicationStats.MethodStats;

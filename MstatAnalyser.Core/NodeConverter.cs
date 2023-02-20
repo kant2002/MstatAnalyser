@@ -1,6 +1,5 @@
 ﻿using Mono.Cecil;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
 
 namespace MstatAnalyser.Core;
 
@@ -151,20 +150,40 @@ public class NodeConverter
         return false;
     }
 
-    private IEnumerable<string> GenerateTypeVariants(TypeReference type)
+    private static string GetFullName(TypeReference type)
     {
-        var assemblyName = type.Scope.Name.Replace("System.Private.", "S.P.");
-        var typeName = type.FullName;
-        yield return MangleAssemblyName(assemblyName) + "_" + MangleTypeName(typeName);
-        yield return MangleTypeName(typeName);
-        yield return typeName.Replace("/", "+");
-        yield return $"[{assemblyName}]{typeName.Replace("/", "+")}";
-        yield return typeName;
+        var fullName = string.IsNullOrEmpty(type.Namespace)
+            ? type.Name
+            : type.Namespace + '.' + type.Name;
+
+        if (type.IsNested)
+            fullName = GetFullName(type.DeclaringType) + "+" + fullName;
+
+        return fullName;
+    }
+
+    private IEnumerable<string> GenerateTypeVariants(TypeReference type, bool bracketed)
+    {
+        if (bracketed)
+        {
+            var typeName = GetFullName(type);
+            var assemblyName = type.Scope.Name.Replace("System.Private.", "S.P.");
+            yield return $"[{assemblyName}]{typeName}";
+        }
+        else
+        {
+            var typeName = GetFullName(type);
+            yield return typeName;
+            var mangledTypeName = MangleTypeName(typeName);
+            yield return mangledTypeName;
+            var assemblyName = type.Scope.Name.Replace("System.Private.", "S.P.");
+            yield return MangleAssemblyName(assemblyName) + "_" + mangledTypeName;
+        }
     }
 
     private bool TryMatchType(TypeReference type, ReadOnlySpan<char> nodeName, out int position, [NotNullWhen(true)]out TypeReference? resolvedType)
     {
-        foreach (var variant in GenerateTypeVariants(type))
+        foreach (var variant in GenerateTypeVariants(type, nodeName[0] == '['))
         {
             if (IsMatch(variant, nodeName, out var matchPosition))
             {
@@ -230,7 +249,7 @@ public class NodeConverter
 
     private static string MangleTypeName(string originalType)
     {
-        return originalType.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_").Replace("/", "_");
+        return originalType.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_").Replace("+", "_");
     }
 
     private static string MangleAssemblyName(string originalAssembly)

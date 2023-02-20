@@ -1,12 +1,14 @@
-﻿using System.Diagnostics;
+﻿using Mono.Cecil;
+using System.Diagnostics;
 using System.Xml;
 
 namespace MstatAnalyser.Core;
 
 public class DgmlGraphProcessing
 {
-    internal bool ParseXML(string name, Stream fileStream, out Graph g)
+    public bool ParseXml(string name, TypeReference[] types, Stream fileStream, out Graph g)
     {
+        var converter = new NodeConverter(types);
         var settings = new XmlReaderSettings();
         settings.IgnoreWhitespace = true;
 
@@ -27,7 +29,8 @@ public class DgmlGraphProcessing
                     case "Node":
                         int id = int.Parse(reader.GetAttribute("Id"));
                         var node = DgmlGraphProcessing.ParseNode(id, reader.GetAttribute("Label"));
-                        g.AddNode(id, node);
+                        var convertedNode = converter.Convert(node);
+                        g.AddNode(id, convertedNode);
                         break;
                     case "Link":
                         int source = int.Parse(reader.GetAttribute("Source"));
