@@ -59,7 +59,7 @@ Choose new file for analysis.
         try
         {
             MemoryStream ms = new MemoryStream();
-            await e.File.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024).CopyToAsync(ms);
+            await e.File.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024).CopyToAsync(ms);
             ms.Position = 0;
             AnalysisManager.OpenFile(e.File.Name, ms);
         }
