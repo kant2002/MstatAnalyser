@@ -6,7 +6,15 @@
 
 @if (AnalysisManager.FileName is null)
 {
-    <h1>Please select file for upload!</h1>
+    <h1>Please select MSTat file for upload!</h1>
+    <p>
+        Add following to your project and look for `appname.mstat` in your `obj\Release` folder.
+    </p>
+<pre>
+&lt;PropertyGroup&gt;
+	&lt;IlcGenerateMstatFile&gt;true&lt;/IlcGenerateMstatFile&gt;
+&lt;/PropertyGroup&gt;
+</pre>
 }
 else
 {
