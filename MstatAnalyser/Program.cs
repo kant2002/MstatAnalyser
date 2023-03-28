@@ -65,8 +65,7 @@ internal class Program
 
     private static void ReadFile(string file, string? assemblyFilter, bool detailed, string[] excludeAssemblyFilter)
     {
-        var asm = AssemblyDefinition.ReadAssembly(file);
-        var applicationStats = new ApplicationStats(asm);
+        var applicationStats = new ApplicationStats(file);
         var statsFilter = new StatsFilter
         {
             AssemblyFilter = assemblyFilter,

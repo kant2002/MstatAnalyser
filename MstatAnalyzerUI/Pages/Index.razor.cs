@@ -21,8 +21,7 @@ public partial class Index
         }
         ms.Position = 0;
 
-        var asm = AssemblyDefinition.ReadAssembly(ms);
-        AssemblyStatsProvider.ApplicationStats = new ApplicationStats(asm);
+        AssemblyStatsProvider.ApplicationStats = new ApplicationStats(ms);
         Navigation.NavigateTo("ByAssembly");
     }
 }

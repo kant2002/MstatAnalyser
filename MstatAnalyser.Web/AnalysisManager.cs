@@ -13,8 +13,7 @@ public class AnalysisManager
     public void OpenFile(string fileName, Stream data)
     {
         this.FileName = fileName;
-        var asm = AssemblyDefinition.ReadAssembly(data);
-        this.ApplicationStats = new ApplicationStats(asm);
+        this.ApplicationStats = new ApplicationStats(data);
         this.ApplicationStatsChanged?.Invoke(ApplicationStats);
     }
 }
